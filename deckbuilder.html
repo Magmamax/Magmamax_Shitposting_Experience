@@ -41,43 +41,70 @@
         }
         .btn-back-nav:hover { background: #004466; color: #fff; }
 
-        /* Zona de Filtros */
+        /* Zona de Filtros Rediseñada */
         .filters { padding: 10px; background: #0b1016; display: flex; flex-direction: column; gap: 8px; border-bottom: 2px solid #00ffff; }
         .search-input { width: 100%; padding: 8px; background: #222; color: #fff; border: 1px solid #44aaff; border-radius: 4px; outline: none; text-align: center; }
         
-        .custom-select { position: relative; flex: 1; user-select: none; font-size: 12px; }
-        .select-selected { background: #222; border: 1px solid #44aaff; color: #fff; padding: 6px; border-radius: 4px; cursor: pointer; text-align: center; }
-        .select-items { position: absolute; background-color: #1a222c; border: 1px solid #44aaff; top: 100%; left: 0; right: 0; z-index: 99; max-height: 180px; overflow-y: auto; display: none; }
-        .select-items div { padding: 8px; cursor: pointer; text-align: center; border-bottom: 1px solid #2a3746; }
-        .select-items div:hover { background-color: #005c99; }
-        .select-show { display: block; }
+        .filter-btn-row { display: flex; gap: 6px; width: 100%; }
+        .filter-main-btn { 
+            flex: 1; background: #222; color: #fff; border: 1px solid #44aaff; 
+            text-align: center; padding: 10px 0; font-weight: bold; cursor: pointer; 
+            border-radius: 4px; font-size: 12px; transition: 0.2s; user-select: none;
+        }
+        .filter-main-btn:hover, .filter-main-btn.active-btn { background: #005c99; color: #ffcc00; border-color: #ffcc00; }
 
-        /* --- COLUMNA 2: DETALLES (REDISEÑADA) --- */
-        .col-details { flex: 1.5; min-width: 350px; background: radial-gradient(circle at center, #1a2a3a 0%, #0b131c 100%); border-color: #44aaff; align-items: center; padding: 20px; overflow-y: auto; }
+        /* Popovers integrados en el flujo */
+        .filter-panel {
+            display: none; background: #111820; border: 1px dashed #00a8ff; 
+            border-radius: 5px; padding: 8px; margin-top: 2px;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 6px;
+        }
+        .filter-panel.active { display: grid; }
         
-        /* Imagen ajustable porcentualmente */
+        .pop-btn {
+            background: #1a222c; border: 1px solid #444; color: #fff; border-radius: 3px; 
+            padding: 8px 0; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; transition: 0.2s;
+        }
+        .pop-btn:hover { background: #004466; border-color: #00ffff; }
+        .pop-btn.active-filter { background: #005c99; border-color: #ffcc00; color: #ffcc00; }
+        
+        /* Colores Específicos para Rarezas */
+        .pop-btn.rarity-v { border: 1px solid #007bff; color: #007bff; background: rgba(0, 123, 255, 0.1); }
+        .pop-btn.rarity-v:hover, .pop-btn.rarity-v.active-filter { background: #007bff; color: #fff; }
+        
+        .pop-btn.rarity-c { border: 1px solid #dc3545; color: #dc3545; background: rgba(220, 53, 69, 0.1); }
+        .pop-btn.rarity-c:hover, .pop-btn.rarity-c.active-filter { background: #dc3545; color: #fff; }
+        
+        .pop-btn.rarity-r { border: 1px solid #ffcc00; color: #ffcc00; background: rgba(255, 204, 0, 0.1); }
+        .pop-btn.rarity-r:hover, .pop-btn.rarity-r.active-filter { background: #ffcc00; color: #000; }
+
+        /* --- COLUMNA 2: DETALLES --- */
+        .col-details { flex: 1.5; min-width: 350px; background: radial-gradient(circle at center, #1a2a3a 0%, #0b131c 100%); border-color: #44aaff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 15px 15px 15px; overflow-y: auto; }
+        
+        #welcome-box { text-align: center; padding: 30px; border: 2px dashed #44aaff; border-radius: 15px; background: rgba(0,0,0,0.3); margin-top: auto; margin-bottom: auto;}
+        #welcome-box h1 { font-size: 45px; color: #ffcc00; letter-spacing: 2px; line-height: 1; margin-bottom: 10px; }
+        #welcome-box h2 { font-size: 24px; color: #00ffff; letter-spacing: 4px; font-weight: 300; }
+
         .large-card-img { 
             width: 95%; 
             max-width: 450px;
             height: auto; 
-            background: #222; 
-            border: 3px solid #555; 
+            background: transparent; 
             border-radius: 15px; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             object-fit: contain; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+            display: none;
         }
 
-        .card-info { width: 100%; max-width: 480px; background: rgba(17, 24, 32, 0.9); border: 1px solid #44aaff; padding: 20px; border-radius: 8px; }
-        .card-name { font-size: 22px; font-weight: bold; color: #ffcc00; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
+        .card-info { width: 95%; max-width: 480px; background: rgba(17, 24, 32, 0.9); border: 1px solid #44aaff; padding: 12px 15px; border-radius: 8px; display: none; }
+        .card-name { font-size: 18px; font-weight: bold; color: #ffcc00; border-bottom: 1px solid #444; padding-bottom: 6px; margin-bottom: 10px; text-align: center; }
         
-        /* Estadísticas reordenadas */
-        .card-stats { display: flex; justify-content: space-between; margin-bottom: 10px; color: #ccc; font-size: 15px; font-weight: bold; align-items: center; }
-        .stat-box { display: flex; align-items: center; gap: 8px; }
-        .stat-icon { background: #ff4444; color: white; padding: 4px 10px; border-radius: 5px; font-size: 16px; }
+        .card-stats { display: flex; justify-content: space-between; margin-bottom: 5px; color: #ccc; font-size: 14px; font-weight: bold; align-items: center; }
+        .stat-box { display: flex; align-items: center; gap: 6px; }
+        .stat-icon { background: #ff4444; color: white; padding: 3px 8px; border-radius: 4px; font-size: 14px; }
         .stat-icon.cost { background: #d4af37; color: black; }
         
-        .card-text { margin-top: 15px; font-size: 15px; line-height: 1.6; color: #eee; padding-top: 15px; border-top: 1px dashed #555; text-align: center; font-style: italic; }
+        .card-text { margin-top: 10px; font-size: 13px; line-height: 1.4; color: #eee; padding-top: 10px; border-top: 1px dashed #555; text-align: center; font-style: italic; white-space: pre-line; }
 
         /* --- COLUMNA 3: MAZO --- */
         .col-deck { flex: 1.2; min-width: 320px; border-color: #ff3333; display: flex; flex-direction: column; }
@@ -88,6 +115,15 @@
         .card-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
         .card-item:hover { border-color: #ffcc00; transform: scale(1.08); z-index: 2; }
         .card-quantity { position: absolute; bottom: -5px; right: -5px; background: #cc0000; color: white; font-size: 11px; padding: 2px 6px; border-radius: 10px; border: 1px solid #fff; font-weight: bold; }
+
+        /* --- POP-UP MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #1a222c; border: 2px solid #ff3333; border-radius: 10px; padding: 25px 30px; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); color: #fff; animation: popIn 0.3s ease-out forwards; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-content h3 { margin-top: 0; color: #ffcc00; font-size: 20px; border-bottom: 1px dashed #555; padding-bottom: 10px; text-transform: uppercase;}
+        .modal-content p { font-size: 15px; margin-bottom: 25px; line-height: 1.5; color: #eee; }
+        .modal-btn { background: linear-gradient(to bottom, #cc0000, #990000); color: white; border: 1px solid #ff4444; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+        .modal-btn:hover { background: linear-gradient(to bottom, #ff3333, #cc0000); transform: scale(1.02); }
 
         @media (max-width: 900px) {
             body { height: auto; overflow-y: auto; }
@@ -110,57 +146,94 @@
             </div>
 
             <div id="view-cards" class="view-container">
-                <div id="back-to-eras-btn"></div> <div class="filters">
+                <div id="back-to-eras-btn"></div> 
+                
+                <div class="filters">
                     <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre...">
-                    <div class="custom-select" id="filter-type">
-                        <div class="select-selected" data-val="">Todos los Tipos</div>
-                        <div class="select-items">
-                            <div data-val="">Todos los Tipos</div>
-                            <div data-val="Aliado">Aliado</div>
-                            <div data-val="Talismán">Talismán</div>
-                            <div data-val="Arma">Arma</div>
-                            <div data-val="Tótem">Tótem</div>
-                            <div data-val="Oro">Oro</div>
-                        </div>
+                    
+                    <div class="filter-btn-row">
+                        <div class="filter-main-btn" id="btn-type" onclick="toggleFilterPanel('panel-type')">TIPO</div>
+                        <div class="filter-main-btn" id="btn-cost" onclick="toggleFilterPanel('panel-cost')">COSTE</div>
+                        <div class="filter-main-btn" id="btn-rarity" onclick="toggleFilterPanel('panel-rarity')">RAREZA</div>
+                    </div>
+
+                    <div id="panel-type" class="filter-panel" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="pop-btn" id="t-AL" onclick="setFilter('type', 'Aliado', 't-AL')">AL</div>
+                        <div class="pop-btn" id="t-TA" onclick="setFilter('type', 'Talismán', 't-TA')">TA</div>
+                        <div class="pop-btn" id="t-AR" onclick="setFilter('type', 'Arma', 't-AR')">AR</div>
+                        <div class="pop-btn" id="t-TO" onclick="setFilter('type', 'Tótem', 't-TO')">TO</div>
+                        <div class="pop-btn" id="t-OR" onclick="setFilter('type', 'Oro', 't-OR')">OR</div>
+                        <div class="pop-btn active-filter" id="t-ALL" onclick="setFilter('type', '', 't-ALL')">ALL</div>
+                    </div>
+
+                    <div id="panel-cost" class="filter-panel" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="pop-btn" id="c-X" onclick="setFilter('cost', 'X', 'c-X')">X</div>
+                        <div class="pop-btn" id="c-0" onclick="setFilter('cost', '0', 'c-0')">0</div>
+                        <div class="pop-btn" id="c-1" onclick="setFilter('cost', '1', 'c-1')">1</div>
+                        <div class="pop-btn" id="c-2" onclick="setFilter('cost', '2', 'c-2')">2</div>
+                        <div class="pop-btn" id="c-3" onclick="setFilter('cost', '3', 'c-3')">3</div>
+                        <div class="pop-btn" id="c-4" onclick="setFilter('cost', '4+', 'c-4')">4+</div>
+                        <div class="pop-btn active-filter" id="c-ALL" style="grid-column: span 2;" onclick="setFilter('cost', '', 'c-ALL')">ALL</div>
+                    </div>
+
+                    <div id="panel-rarity" class="filter-panel" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="pop-btn rarity-v" id="r-V" onclick="setFilter('rarity', 'Vasallo', 'r-V')">V</div>
+                        <div class="pop-btn rarity-c" id="r-C" onclick="setFilter('rarity', 'Cortesano', 'r-C')">C</div>
+                        <div class="pop-btn rarity-r" id="r-R" onclick="setFilter('rarity', 'Real', 'r-R')">R</div>
+                        <div class="pop-btn active-filter" id="r-ALL" onclick="setFilter('rarity', '', 'r-ALL')">ALL</div>
                     </div>
                 </div>
+
                 <div class="card-grid" id="trunk-grid"></div>
             </div>
         </div>
 
-        <div class="panel col-details">
-            <img src="https://via.placeholder.com/300x420/1a222c/ffcc00?text=Selecciona%0Auna%0Acarta" id="detail-img" class="large-card-img">
+        <div class="panel col-details" id="card-inspector">
             
-            <div class="card-info">
-                <div class="card-name" id="detail-name">Sin Selección</div>
+            <div id="welcome-box">
+                <h1>DECK BUILDER</h1>
+                <h2>MITOS Y LEYENDAS</h2>
+            </div>
+
+            <img src="" id="detail-img" class="large-card-img">
+            
+            <div class="card-info" id="card-info-pane">
+                <div class="card-name" id="detail-name"></div>
                 <div class="card-stats">
-                    <span id="detail-type-race">Tipo - Rareza</span>
-                    <span id="detail-edition" style="color: #44aaff;">Edición</span>
+                    <span id="detail-type-race"></span>
+                    <span id="detail-edition" style="color: #44aaff;"></span>
                 </div>
                 
                 <div class="card-stats">
                     <div class="stat-box" id="stat-strength-container" style="visibility: hidden;">
                         <span class="stat-icon">F</span> <span id="detail-strength">-</span>
                     </div>
-                    
                     <div class="stat-box">
                          <span id="detail-cost">-</span> <span class="stat-icon cost">C</span>
                     </div>
                 </div>
 
-                <div class="card-text" id="detail-text">Selecciona una edición a la izquierda para ver sus cartas.</div>
+                <div class="card-text" id="detail-text"></div>
             </div>
         </div>
 
         <div class="panel col-deck">
             <div class="panel-header">
-                <span>Mazo</span>
+                <span>Mazo <span style="font-size:10px; color:#aaa; font-weight:normal;">(Clic der. para sacar)</span></span>
                 <span style="font-size:12px;"><b id="deck-count">0</b> / 50</span>
-                <button style="font-size:10px; padding:2px 5px;" onclick="clearDeck()">Vaciar</button>
+                <button style="font-size:10px; padding:2px 5px; cursor:pointer;" onclick="clearDeck()">Vaciar</button>
             </div>
             <div class="card-grid" id="deck-grid"></div>
         </div>
 
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Aviso</h3>
+            <p id="modal-message">Mensaje</p>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
     </div>
 
     <script src="js/database.js"></script>
@@ -174,7 +247,7 @@
 
         const menuStructure = {
             "Salo (2000 - 2010)": {
-                "Primera Era": ["El Reto", "El Reto: Expansion", "Mundo Gótico", "Mundo Gótico: Expansion", "La Ira del Nahual", "Ragnarok", "La Cofradía", "Espíritu de Dragón"],
+                "Primera Era": ["El Reto", "Mundo Gótico", "La Ira del Nahual", "Ragnarok", "La Cofradía", "Espíritu de Dragón"],
                 "Segunda Era": {
                     "Primer Bloque": ["Espada Sagrada", "Cruzadas", "Helénica", "Imperio", "Hijos de Daana", "Tierras Altas", "Dominios de Ra", "Encrucijada"],
                     "Segundo Bloque": ["Guerrero Jaguar", "Vendaval", "Barbarie", "Reino de Acero", "Hordas", "Bestiario", "Heroes"]
@@ -184,14 +257,57 @@
 
         function init() {
             renderEras();
-            setupCustomSelects();
             document.getElementById('search-input').addEventListener('input', (e) => {
                 stateFilters.search = e.target.value;
                 applyFilters();
             });
         }
 
-        // --- NAVEGACIÓN ---
+        // --- SISTEMA POP-UP MODAL ---
+        function showModal(title, message) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // --- LÓGICA DE PANELES DE FILTRO ---
+        function toggleFilterPanel(panelId) {
+            // Cerramos todos
+            document.querySelectorAll('.filter-panel').forEach(el => {
+                if(el.id !== panelId) el.classList.remove('active');
+            });
+            // Quitamos estado activo de botones
+            document.querySelectorAll('.filter-main-btn').forEach(btn => btn.classList.remove('active-btn'));
+            
+            const panel = document.getElementById(panelId);
+            panel.classList.toggle('active');
+            
+            if(panel.classList.contains('active')) {
+                if(panelId === 'panel-type') document.getElementById('btn-type').classList.add('active-btn');
+                if(panelId === 'panel-cost') document.getElementById('btn-cost').classList.add('active-btn');
+                if(panelId === 'panel-rarity') document.getElementById('btn-rarity').classList.add('active-btn');
+            }
+        }
+
+        function setFilter(category, value, btnId) {
+            stateFilters[category] = value;
+            
+            // Actualizar estilo de botón presionado
+            let panelId = `panel-${category}`;
+            document.querySelectorAll(`#${panelId} .pop-btn`).forEach(b => b.classList.remove('active-filter'));
+            document.getElementById(btnId).classList.add('active-filter');
+            
+            // Cerrar el panel automáticamente
+            document.getElementById(panelId).classList.remove('active');
+            document.querySelectorAll('.filter-main-btn').forEach(b => b.classList.remove('active-btn'));
+
+            applyFilters();
+        }
+
+        // --- NAVEGACIÓN MENU ---
         function renderEras() {
             viewMenu.style.display = 'flex';
             viewCards.style.display = 'none';
@@ -208,11 +324,8 @@
             const subEras = menuStructure[eraName];
             Object.keys(subEras).forEach(sub => {
                 menuContent.appendChild(createMenuBtn(sub, () => {
-                    if (Array.isArray(subEras[sub])) {
-                        renderEditions(subEras[sub], () => renderSubEras(eraName));
-                    } else {
-                        renderBlocks(subEras[sub], eraName);
-                    }
+                    if (Array.isArray(subEras[sub])) renderEditions(subEras[sub], () => renderSubEras(eraName));
+                    else renderBlocks(subEras[sub], eraName);
                 }));
             });
         }
@@ -235,7 +348,6 @@
             });
         }
 
-        // --- HELPERS DE UI (Corregidos para evitar "lneas de código") ---
         function createMenuBtn(text, onClick) {
             const btn = document.createElement('button');
             btn.className = 'menu-btn';
@@ -268,15 +380,39 @@
             applyFilters();
         };
 
-        // --- LÓGICA DE CARTAS ---
+        // --- LÓGICA DE FILTROS Y CARTAS ---
         function applyFilters() {
             if (typeof window.mylDatabase === 'undefined') return;
             let filtered = window.mylDatabase.filter(c => {
                 const matchName = c.name.toLowerCase().includes(stateFilters.search.toLowerCase());
-                const matchType = stateFilters.type === "" || c.type === stateFilters.type;
+                
+                // Comparación flexible de tipos (Por culpa de acentos como Talismán)
+                const matchType = stateFilters.type === "" || (c.type && c.type.toLowerCase().includes(stateFilters.type.toLowerCase()));
+                
                 const matchEdition = stateFilters.edition === "" || c.edition === stateFilters.edition;
-                return matchName && matchType && matchEdition;
+                
+                // Filtro Rareza
+                let matchRarity = true;
+                if(stateFilters.rarity !== "") {
+                    matchRarity = c.rarity && c.rarity.toLowerCase().includes(stateFilters.rarity.toLowerCase());
+                }
+
+                // Filtro Coste Inteligente
+                let matchCost = true;
+                if(stateFilters.cost !== "") {
+                    if(stateFilters.cost === "4+") {
+                        let cVal = parseInt(c.cost);
+                        matchCost = (!isNaN(cVal) && cVal >= 4);
+                    } else if (stateFilters.cost === "X") {
+                        matchCost = (c.cost.toLowerCase() === "x");
+                    } else {
+                        matchCost = (c.cost.toString() === stateFilters.cost);
+                    }
+                }
+
+                return matchName && matchType && matchEdition && matchRarity && matchCost;
             });
+
             renderTrunk(filtered);
         }
 
@@ -291,6 +427,38 @@
             });
         }
 
+        function renderDeck() {
+            const grid = document.getElementById('deck-grid');
+            grid.innerHTML = '';
+            document.getElementById('deck-count').innerText = currentDeck.length;
+            
+            const deckCounts = {};
+            const uniqueCards = [];
+            
+            // Agrupamos las referencias para que la UI muestre "x2", "x3" de forma limpia
+            currentDeck.forEach(card => {
+                if (!deckCounts[card.id]) {
+                    deckCounts[card.id] = 0;
+                    uniqueCards.push(card);
+                }
+                deckCounts[card.id]++;
+            });
+
+            uniqueCards.sort((a,b) => a.id - b.id).forEach(card => {
+                const el = createCardElement(card);
+                const qty = document.createElement('div');
+                qty.className = 'card-quantity';
+                qty.innerText = 'x' + deckCounts[card.id];
+                el.appendChild(qty);
+
+                el.onclick = () => showDetails(card);
+                // Clic derecho remueve 1 copia
+                el.oncontextmenu = (e) => { e.preventDefault(); removeFromDeck(card.id); };
+                el.onmouseenter = () => showDetails(card);
+                grid.appendChild(el);
+            });
+        }
+
         function createCardElement(card) {
             const div = document.createElement('div');
             div.className = 'card-item';
@@ -302,6 +470,10 @@
         }
 
         function showDetails(card) {
+            document.getElementById('welcome-box').style.display = 'none';
+            document.getElementById('detail-img').style.display = 'block';
+            document.getElementById('card-info-pane').style.display = 'block';
+
             document.getElementById('detail-img').src = card.img;
             document.getElementById('detail-name').innerText = card.name;
             document.getElementById('detail-type-race').innerText = card.type + (card.rarity ? ` - ${card.rarity}` : '');
@@ -309,7 +481,6 @@
             document.getElementById('detail-cost').innerText = card.cost;
             document.getElementById('detail-text').innerText = card.text;
 
-            // Lógica inteligente para Fuerza (F)
             const strengthContainer = document.getElementById('stat-strength-container');
             if (card.type.toLowerCase().includes("aliado")) {
                 strengthContainer.style.visibility = "visible";
@@ -319,40 +490,33 @@
             }
         }
 
+        // --- REGLAS DE CONSTRUCCIÓN DE MAZO ---
         window.addToDeck = (card) => {
-            if (currentDeck.length >= 50) return alert("Mazo lleno");
+            const count = currentDeck.filter(c => c.name === card.name && c.edition === card.edition).length;
+            const isUnique = card.text ? card.text.toLowerCase().includes("única") || card.text.toLowerCase().includes("unica") : false;
+
+            if (currentDeck.length >= 50) return showModal("Límite de Mazo", "Tu mazo ya está lleno.\nSolo puedes tener un máximo de 50 cartas.");
+            if (isUnique && count >= 1) return showModal("Carta Única", "Esta carta tiene la habilidad 'Única'.\nSolo puedes incluir 1 copia en tu mazo.");
+            if (!isUnique && count >= 3) return showModal("Límite de Copias", "Has alcanzado el límite.\nNo puedes incluir más de 3 copias de la misma carta.");
+
             currentDeck.push(card);
             renderDeck();
         };
 
-        function renderDeck() {
-            const grid = document.getElementById('deck-grid');
-            grid.innerHTML = '';
-            document.getElementById('deck-count').innerText = currentDeck.length;
-            currentDeck.forEach((card, index) => {
-                const el = createCardElement(card);
-                el.onclick = () => { currentDeck.splice(index, 1); renderDeck(); };
-                grid.appendChild(el);
-            });
+        window.removeFromDeck = function(cardId) {
+            // Busca la última carta añadida con ese ID y la borra
+            const index = currentDeck.findLastIndex(c => c.id === cardId);
+            if (index > -1) {
+                currentDeck.splice(index, 1);
+                renderDeck();
+            }
         }
 
-        function setupCustomSelects() {
-            const customSelects = document.querySelectorAll(".custom-select");
-            customSelects.forEach(selectContainer => {
-                const selectedDiv = selectContainer.querySelector(".select-selected");
-                const itemsDiv = selectContainer.querySelector(".select-items");
-                const options = itemsDiv.querySelectorAll("div");
-                selectedDiv.onclick = (e) => { e.stopPropagation(); itemsDiv.classList.toggle("select-show"); };
-                options.forEach(opt => {
-                    opt.onclick = function() {
-                        selectedDiv.innerText = this.innerText;
-                        stateFilters.type = this.getAttribute("data-val");
-                        itemsDiv.classList.remove("select-show");
-                        applyFilters();
-                    };
-                });
-            });
-            document.onclick = () => document.querySelectorAll(".select-items").forEach(el => el.classList.remove("select-show"));
+        window.clearDeck = function() {
+            if(confirm('¿Seguro que deseas vaciar todo el mazo?')){
+                currentDeck = [];
+                renderDeck();
+            }
         }
 
         function showEditions() {
