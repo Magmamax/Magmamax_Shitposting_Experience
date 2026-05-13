@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         event.stopPropagation(); 
         hitSound.play(); 
         clickSound.play(); 
-        target.src = 'https://magmashitposting.lol/img/JG_D.png'; 
+        target.src = 'img/JG_D.png'; 
         score++;
         scoreElement.textContent = score;
 
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             target.style.display = 'none'; 
             setTimeout(() => {
                 target.style.display = 'block'; 
-                target.src = 'https://magmashitposting.lol/img/JG_A.png'; 
+                target.src = 'img/JG_A.png'; 
             }, 500); 
         }, 1000); 
     }
