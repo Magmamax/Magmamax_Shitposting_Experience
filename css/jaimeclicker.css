@@ -1,0 +1,31 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.game-container {
+    display: flex;
+    gap: 20px;
+}
+
+.upgrades, .main, .objects {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.upgrades, .objects {
+    width: 200px;
+}
+
+#clicker {
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+    width: 150px;
+    height: 150px;
+}

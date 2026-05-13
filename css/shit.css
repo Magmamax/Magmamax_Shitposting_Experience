@@ -1,0 +1,87 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 1000px;
+    height: auto;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.text-mask {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 7px;
+    background: url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDlmYzRrZDZ6djZpbDhna3JqZmxrZDVqOHh0anQ5bDQ3OWJqeWRvZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ckIBX6aFkmOxQJBcVD/source.gif') no-repeat center center / contain;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.text-mask h1 {
+    margin: 0;
+    padding: 0;
+}
+
+.footer {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    margin-top: 20px; /* Añadir un margen superior para dejar un espacio debajo del container */
+}
+
+.footer ul {
+    display: flex;
+    flex-direction: column; /* Cambiar la dirección del flex a columna */
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer li {
+    margin: 5px 0; /* Añadir un margen vertical entre los elementos */
+}
+
+.footer a {
+    text-decoration: none;
+    color: inherit; /* Asegurarse de que los enlaces no tengan color */
+}
+
+@media (max-width: 768px) {
+    .text-mask {
+        font-size: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .text-mask {
+        font-size: 4px;
+    }
+}

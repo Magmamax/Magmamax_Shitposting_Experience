@@ -1,0 +1,63 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(124, 157, 248);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.box {
+    padding: 10px;
+    display: inline-block;
+    padding: 0.5vw 1vw;
+}
+
+.texto-animado {
+    font-size: 5vw; /* El tamaño del texto será el 5% del ancho de la ventana */
+    font-weight: bold;
+    text-align: center;
+}
+
+.footer {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    margin-top: 20px; /* Añadir un margen superior para dejar un espacio debajo del container */
+}
+
+.footer ul {
+    display: flex;
+    flex-direction: column; /* Cambiar la dirección del flex a columna */
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer li {
+    margin: 5px 0; /* Añadir un margen vertical entre los elementos */
+}
+
+.footer a {
+    text-decoration: none;
+    color: inherit; /* Asegurarse de que los enlaces no tengan color */
+}

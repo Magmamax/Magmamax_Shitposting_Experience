@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyL Deck Builder</title>
+    <style>
+        /* Estilos Base y Reseteo */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d1115; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* Contenedor Principal (3 Columnas) */
+        .container { display: flex; flex: 1; height: 100%; padding: 10px; gap: 10px; }
+        
+        /* Paneles Generales */
+        .panel { background: #1a222c; border: 2px solid #00a8ff; border-radius: 5px; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { background: linear-gradient(to bottom, #005c99, #003366); padding: 8px; text-align: center; font-weight: bold; border-bottom: 2px solid #00a8ff; letter-spacing: 1px; font-size: 15px;}
+
+        /* --- COLUMNA 1: COLECCIÓN --- */
+        .col-collection { flex: 1.1; min-width: 320px; border-color: #00ffff; display: flex; flex-direction: column; z-index: 10; }
+        .col-collection .panel-header { background: linear-gradient(to bottom, #0088cc, #004466); }
+
+        /* Contenedores de Vistas (Acordeón vs Cartas) */
+        .view-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        #view-editions { overflow-y: auto; }
+        #view-cards { display: none; } 
+
+        /* Botón Volver */
+        .btn-back { background: #004466; color: #ffcc00; padding: 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #00ffff; transition: background 0.2s; }
+        .btn-back:hover { background: #005c99; color: #fff; }
+
+        /* Acordeón de Ediciones */
+        .accordion-container { background: #0b1016; display: flex; flex-direction: column; font-size: 14px; flex: 1; }
+        .acc-btn { background: #1a222c; color: #fff; cursor: pointer; padding: 12px 15px; width: 100%; text-align: left; border: none; outline: none; transition: 0.2s; border-bottom: 1px solid #005c99; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .acc-btn:hover { background: #004466; }
+        .acc-content { padding: 0; display: none; background-color: #0d1115; flex-direction: column; border-left: 3px solid #00a8ff; margin-left: 5px; }
+        .sub-btn { background: #111820; font-weight: normal; border-bottom: 1px solid #222; }
+        .sub-btn:hover { background: #1a222c; }
+        .ed-tab { padding: 10px 20px; cursor: pointer; color: #aaa; transition: 0.2s; border-bottom: 1px dotted #222; }
+        .ed-tab:hover, .ed-tab.active { color: #ffcc00; background: #222; font-weight: bold; padding-left: 25px; }
+        .toggle-icon { font-size: 16px; color: #00a8ff; font-weight: bold; }
+
+        /* Zona de Filtros */
+        .filters { padding: 10px; background: #0b1016; display: flex; flex-direction: column; gap: 8px; border-bottom: 2px solid #00ffff; }
+        .search-input { width: 100%; padding: 8px; background: #222; color: #fff; border: 1px solid #44aaff; border-radius: 4px; outline: none; }
+        .search-input:focus { border-color: #ffcc00; }
+        .filter-row { display: flex; gap: 8px; }
+
+        /* Menús Desplegables Custom */
+        .custom-select { position: relative; flex: 1; user-select: none; font-size: 12px; }
+        .select-selected { background: #222; border: 1px solid #44aaff; color: #fff; padding: 6px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .select-selected::after { content: '▼'; font-size: 9px; color: #44aaff; }
+        .select-selected.select-arrow-active::after { content: '▲'; }
+        .select-items { position: absolute; background-color: #1a222c; border: 1px solid #44aaff; border-top: none; top: 100%; left: 0; right: 0; z-index: 99; max-height: 180px; overflow-y: auto; border-radius: 0 0 4px 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.8); display: none; }
+        .select-items div { padding: 8px; cursor: pointer; border-bottom: 1px solid #2a3746; }
+        .select-items div:hover { background-color: #005c99; }
+        .select-show { display: block; }
+
+        /* --- COLUMNA 2: DETALLES --- */
+        .col-details { flex: 1.5; min-width: 350px; background: radial-gradient(circle at center, #1a2a3a 0%, #0b131c 100%); border-color: #44aaff; align-items: center; padding: 15px; overflow-y: auto; }
+        .large-card-img { width: 280px; height: 390px; background: #222; border: 3px solid #555; border-radius: 10px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.6); transition: transform 0.2s; }
+        .large-card-img:hover { border-color: #ffcc00; transform: scale(1.02); }
+        .card-info { width: 100%; max-width: 450px; background: rgba(17, 24, 32, 0.9); border: 1px solid #44aaff; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .card-name { font-size: 20px; font-weight: bold; color: #ffcc00; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 10px; text-align: center; }
+        .card-stats { display: flex; justify-content: space-between; margin-bottom: 8px; color: #ccc; font-size: 14px; font-weight: bold; }
+        .stat-box { display: flex; align-items: center; gap: 8px; }
+        .stat-icon { background: #ff4444; color: white; padding: 3px 8px; border-radius: 4px; }
+        .stat-icon.cost { background: #d4af37; color: black; }
+        .card-text { margin-top: 15px; font-size: 14px; line-height: 1.5; color: #eee; padding-top: 10px; border-top: 1px dashed #555; min-height: 80px; }
+
+        /* --- COLUMNA 3: MAZO --- */
+        .col-deck { flex: 1.2; min-width: 320px; border-color: #ff3333; display: flex; flex-direction: column; z-index: 5; }
+        .col-deck .panel-header { background: linear-gradient(to bottom, #cc0000, #660000); border-bottom-color: #ff3333; display: flex; justify-content: space-between; align-items: center; padding: 8px 15px;}
+        .deck-stats { font-size: 14px; }
+        .btn-control { background: #111; color: white; border: 1px solid #777; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .btn-control:hover { background: #ff3333; border-color: #fff; }
+
+        /* Grillas de Cartas */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 8px; padding: 10px; overflow-y: auto; flex: 1; align-content: start; }
+        .card-item { width: 65px; height: 92px; background: #333; cursor: pointer; border: 2px solid transparent; border-radius: 4px; transition: 0.1s; position: relative; }
+        .card-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+        .card-item:hover { border-color: #ffcc00; transform: translateY(-3px) scale(1.05); z-index: 2; box-shadow: 0 4px 8px rgba(255,204,0,0.5); }
+        .card-quantity { position: absolute; bottom: -5px; right: -5px; background: #cc0000; color: white; font-size: 11px; padding: 2px 6px; border-radius: 10px; border: 1px solid #fff; font-weight: bold; }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #44aaff; border-radius: 4px; }
+
+        /* --- RESPONSIVIDAD --- */
+        @media (max-width: 900px) {
+            body { height: auto; overflow-y: auto; }
+            .container { flex-direction: column; height: auto; overflow: visible; }
+            .col-collection { height: 600px; min-height: 600px; }
+            .col-details { min-height: 600px; }
+            .col-deck { height: 400px; min-height: 400px; }
+            .large-card-img { width: 220px; height: 310px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="panel col-collection">
+            <div class="panel-header" id="collection-title">Seleccionar Edición</div>
+
+            <div id="view-editions" class="view-container" style="display: flex;">
+                <div class="accordion-container">
+                    <button class="acc-btn">Salo (2000 - 2010) <span class="toggle-icon">-</span></button>
+                    <div class="acc-content" style="display: flex;">
+                        
+                        <button class="acc-btn sub-btn">Primera Era <span class="toggle-icon">+</span></button>
+                        <div class="acc-content" style="display: none;">
+                            <div class="ed-tab" onclick="selectEdition('El Reto')">El Reto</div>
+                            <div class="ed-tab" onclick="selectEdition('Mundo Gótico')">Mundo Gótico</div>
+                            <div class="ed-tab" onclick="selectEdition('La Ira del Nahual')">La Ira del Nahual</div>
+                            <div class="ed-tab" onclick="selectEdition('Ragnarok')">Ragnarok</div>
+                            <div class="ed-tab" onclick="selectEdition('La Cofradía')">La Cofradía</div>
+                            <div class="ed-tab" onclick="selectEdition('Espíritu de Dragón')">Espíritu de Dragón</div>
+                            <div class="ed-tab" onclick="selectEdition('Leyendas - Primera Era')">Leyendas - Primera Era</div>
+                        </div>
+
+                        <button class="acc-btn sub-btn">Segunda Era <span class="toggle-icon">-</span></button>
+                        <div class="acc-content" style="display: flex;">
+                            
+                            <button class="acc-btn sub-btn" style="padding-left:25px;">Primer Bloque <span class="toggle-icon">-</span></button>
+                            <div class="acc-content" style="display: flex;">
+                                <div class="ed-tab" onclick="selectEdition('Espada Sagrada')">Espada Sagrada</div>
+                                <div class="ed-tab" onclick="selectEdition('Cruzadas')">Cruzadas</div>
+                                <div class="ed-tab" onclick="selectEdition('Helénica')">Helénica</div>
+                                <div class="ed-tab" onclick="selectEdition('Imperio')">Imperio</div>
+                                <div class="ed-tab" onclick="selectEdition('Hijos de Daana')">Hijos de Daana</div>
+                                <div class="ed-tab" onclick="selectEdition('Tierras Altas')">Tierras Altas</div>
+                                <div class="ed-tab" onclick="selectEdition('Dominios de Ra')">Dominios de Ra</div>
+                                <div class="ed-tab" onclick="selectEdition('Encrucijada')">Encrucijada</div>
+                            </div>
+
+                            <button class="acc-btn sub-btn" style="padding-left:25px;">Segundo Bloque <span class="toggle-icon">-</span></button>
+                            <div class="acc-content" style="display: flex;">
+                                <div class="ed-tab" onclick="selectEdition('Guerrero Jaguar')">Guerrero Jaguar</div>
+                                <div class="ed-tab" onclick="selectEdition('Vendaval')">Vendaval</div>
+                                <div class="ed-tab" onclick="selectEdition('Barbarie')">Barbarie</div>
+                                <div class="ed-tab" onclick="selectEdition('Reino de Acero')">Reino de Acero</div>
+                                <div class="ed-tab" onclick="selectEdition('Hordas')">Hordas</div>
+                                <div class="ed-tab" onclick="selectEdition('Bestiario')">Bestiario</div>
+                            </div>
+
+                            <button class="acc-btn sub-btn" style="padding-left:25px;">Crónicas <span class="toggle-icon">+</span></button>
+                            <div class="acc-content">
+                                <div class="ed-tab" onclick="selectEdition('Código Samurái')">Código Samurái</div>
+                                <div class="ed-tab" onclick="selectEdition('Héroes de Chile')">Héroes de Chile</div>
+                                <div class="ed-tab" onclick="selectEdition('Piratas')">Piratas</div>
+                                <div class="ed-tab" onclick="selectEdition('Inmortales')">Inmortales</div>
+                                <div class="ed-tab" onclick="selectEdition('Duna')">Duna</div>
+                                <div class="ed-tab" onclick="selectEdition('Orígenes')">Orígenes</div>
+                                <div class="ed-tab" onclick="selectEdition('Invasión')">Invasión</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="ed-tab" onclick="selectEdition('')" style="border-top: 1px solid #44aaff; color: #44aaff; text-align: center;">Ver Todas las Cartas</div>
+                </div>
+            </div>
+
+            <div id="view-cards" class="view-container" style="display: none;">
+                
+                <div class="btn-back" onclick="showEditions()">
+                    <span style="font-size: 18px;">⬅</span> Volver a Ediciones
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre...">
+                    <div class="filter-row">
+                        <div class="custom-select" id="filter-type">
+                            <div class="select-selected" data-val="">Todos los Tipos</div>
+                            <div class="select-items">
+                                <div data-val="">Todos los Tipos</div>
+                                <div data-val="Aliado">Aliado</div>
+                                <div data-val="Talismán">Talismán</div>
+                                <div data-val="Arma">Arma</div>
+                                <div data-val="Tótem">Tótem</div>
+                                <div data-val="Oro">Oro</div>
+                            </div>
+                        </div>
+                        <div class="custom-select" id="filter-rarity">
+                            <div class="select-selected" data-val="">Todas las Rarezas</div>
+                            <div class="select-items">
+                                <div data-val="">Todas las Rarezas</div>
+                                <div data-val="Real">Real</div>
+                                <div data-val="Cortesano">Cortesano</div>
+                                <div data-val="Vasallo">Vasallo</div>
+                                <div data-val="Oro">Oro</div>
+                                <div data-val="Promocional">Promocional</div>
+                                <div data-val="Legendaria">Legendaria</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="custom-select" id="filter-cost">
+                            <div class="select-selected" data-val="">Cualquier Coste</div>
+                            <div class="select-items">
+                                <div data-val="">Cualquier Coste</div>
+                                <div data-val="0">0</div>
+                                <div data-val="1">1</div>
+                                <div data-val="2">2</div>
+                                <div data-val="3">3</div>
+                                <div data-val="4+">4 o más</div>
+                            </div>
+                        </div>
+                        <div class="custom-select" id="filter-sort">
+                            <div class="select-selected" data-val="ID">Orden: Normal</div>
+                            <div class="select-items">
+                                <div data-val="ID">Orden: Normal (ID)</div>
+                                <div data-val="AZ">Alfabeto: A - Z</div>
+                                <div data-val="ZA">Alfabeto: Z - A</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid" id="trunk-grid"></div>
+            </div>
+
+        </div>
+
+        <div class="panel col-details">
+            <div class="panel-header" style="width: 100%; max-width: 450px; margin-bottom: 15px; border-radius: 5px;">Inspector de Cartas</div>
+            
+            <img src="https://via.placeholder.com/300x420/1a222c/ffcc00?text=Selecciona%0Auna%0Acarta" id="detail-img" class="large-card-img" alt="Carta Detalle">
+            
+            <div class="card-info">
+                <div class="card-name" id="detail-name">Sin Carta Seleccionada</div>
+                <div class="card-stats">
+                    <span id="detail-type-race">Tipo - Rareza</span>
+                    <span id="detail-edition" style="color: #44aaff;">Edición</span>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-box"><span class="stat-icon cost">C</span> <span id="detail-cost">-</span></div>
+                    <div class="stat-box"><span class="stat-icon">F</span> <span id="detail-strength">-</span></div>
+                </div>
+                <div class="card-text" id="detail-text">Navega por las ediciones en el panel izquierdo para buscar cartas y armar tu mazo.</div>
+            </div>
+        </div>
+
+        <div class="panel col-deck">
+            <div class="panel-header">
+                <span>Tu Mazo</span>
+                <span class="deck-stats">Cartas: <b id="deck-count" style="color:#ffcc00;">0</b> / 50</span>
+                <button class="btn-control" onclick="clearDeck()">Vaciar</button>
+            </div>
+            <div class="card-grid" id="deck-grid"></div>
+        </div>
+
+    </div>
+
+    <script src="database.js"></script>
+
+    <script>
+        // La variable 'mylDatabase' ya no se declara con 'let' porque se carga desde database.js
+        let currentDeck = [];
+        let stateFilters = { search: "", type: "", rarity: "", cost: "", sort: "ID", edition: "" };
+
+        // Referencias DOM
+        const viewEditions = document.getElementById('view-editions');
+        const viewCards = document.getElementById('view-cards');
+        const collectionTitle = document.getElementById('collection-title');
+        const trunkGrid = document.getElementById('trunk-grid');
+        const deckGrid = document.getElementById('deck-grid');
+        const dImg = document.getElementById('detail-img');
+
+        function init() {
+            setupCustomSelects();
+            setupAccordion();
+            
+            // Verificamos que la base de datos externa se haya cargado correctamente
+            if (typeof mylDatabase !== 'undefined' && mylDatabase.length > 0) {
+                document.getElementById('detail-img').src = 'https://via.placeholder.com/280x390/1a222c/00a8ff?text=Base+Cargada';
+                document.getElementById('detail-text').innerHTML = 'Tu base de datos está cargada exitosamente desde database.js.<br><br>Navega por las ediciones en el panel izquierdo para buscar cartas y armar tu mazo.';
+            } else {
+                document.getElementById('detail-text').innerHTML = '<span style="color:red">Error: No se encontró el archivo database.js o está vacío. Asegúrate de guardarlo en la misma carpeta.</span>';
+            }
+            
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                stateFilters.search = e.target.value;
+                applyFilters();
+            });
+        }
+
+        // --- MANEJO DE VISTAS ---
+        window.selectEdition = function(edName) {
+            stateFilters.edition = edName;
+            viewEditions.style.display = 'none';
+            viewCards.style.display = 'flex';
+            collectionTitle.innerText = edName ? "Edición: " + edName : "Todas las Cartas";
+            applyFilters();
+        }
+
+        window.showEditions = function() {
+            viewCards.style.display = 'none';
+            viewEditions.style.display = 'flex';
+            collectionTitle.innerText = "Seleccionar Edición";
+        }
+
+        // --- ACORDEÓN ---
+        function setupAccordion() {
+            const accBtns = document.querySelectorAll(".acc-btn");
+            accBtns.forEach(btn => {
+                btn.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    const panel = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon');
+                    if (panel && panel.classList.contains('acc-content')) {
+                        if (panel.style.display === "flex") {
+                            panel.style.display = "none";
+                            if(icon) icon.innerText = "+";
+                        } else {
+                            panel.style.display = "flex";
+                            if(icon) icon.innerText = "-";
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- DROPDOWNS CUSTOM ---
+        function setupCustomSelects() {
+            const customSelects = document.querySelectorAll(".custom-select");
+            customSelects.forEach(selectContainer => {
+                const selectedDiv = selectContainer.querySelector(".select-selected");
+                const itemsDiv = selectContainer.querySelector(".select-items");
+                const options = itemsDiv.querySelectorAll("div");
+
+                selectedDiv.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    closeAllSelects(this);
+                    itemsDiv.classList.toggle("select-show");
+                    this.classList.toggle("select-arrow-active");
+                });
+
+                options.forEach(opt => {
+                    opt.addEventListener("click", function(e) {
+                        e.stopPropagation();
+                        selectedDiv.innerHTML = this.innerHTML;
+                        const val = this.getAttribute("data-val");
+                        selectedDiv.setAttribute("data-val", val);
+                        
+                        itemsDiv.classList.remove("select-show");
+                        selectedDiv.classList.remove("select-arrow-active");
+
+                        const id = selectContainer.id;
+                        if(id === "filter-type") stateFilters.type = val;
+                        if(id === "filter-rarity") stateFilters.rarity = val;
+                        if(id === "filter-cost") stateFilters.cost = val;
+                        if(id === "filter-sort") stateFilters.sort = val;
+                        applyFilters();
+                    });
+                });
+            });
+            document.addEventListener("click", closeAllSelects);
+        }
+
+        function closeAllSelects(elmnt) {
+            const items = document.querySelectorAll(".select-items");
+            const selecteds = document.querySelectorAll(".select-selected");
+            items.forEach((item, index) => {
+                if (elmnt !== selecteds[index]) {
+                    item.classList.remove("select-show");
+                    selecteds[index].classList.remove("select-arrow-active");
+                }
+            });
+        }
+
+        // --- FILTRADO Y RENDERIZADO ---
+        function applyFilters() {
+            if (typeof mylDatabase === 'undefined') return;
+
+            let filtered = mylDatabase.filter(c => {
+                const matchName = c.name.toLowerCase().includes(stateFilters.search.toLowerCase());
+                const matchType = stateFilters.type === "" || c.type === stateFilters.type;
+                const matchRarity = stateFilters.rarity === "" || c.rarity === stateFilters.rarity;
+                const matchEdition = stateFilters.edition === "" || c.edition === stateFilters.edition;
+                
+                let matchCost = true;
+                if(stateFilters.cost !== "") {
+                    if(stateFilters.cost === "4+") matchCost = parseInt(c.cost) >= 4;
+                    else matchCost = c.cost.toString() === stateFilters.cost;
+                }
+                return matchName && matchType && matchRarity && matchCost && matchEdition;
+            });
+
+            if (stateFilters.sort === "AZ") {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (stateFilters.sort === "ZA") {
+                filtered.sort((a, b) => b.name.localeCompare(a.name));
+            } else {
+                filtered.sort((a, b) => a.id - b.id);
+            }
+
+            renderTrunk(filtered);
+        }
+
+        function renderTrunk(cards) {
+            trunkGrid.innerHTML = '';
+            cards.forEach(card => {
+                const el = createCardElement(card);
+                el.onclick = () => { showDetails(card); addToDeck(card); };
+                el.onmouseenter = () => showDetails(card);
+                trunkGrid.appendChild(el);
+            });
+        }
+
+        function renderDeck() {
+            deckGrid.innerHTML = '';
+            document.getElementById('deck-count').innerText = currentDeck.length;
+            
+            const deckCounts = {};
+            currentDeck.forEach(card => deckCounts[card.id] = (deckCounts[card.id] || 0) + 1);
+
+            const uniqueCards = [...new Set(currentDeck)];
+            uniqueCards.sort((a,b) => a.id - b.id).forEach(card => {
+                const el = createCardElement(card);
+                const qty = document.createElement('div');
+                qty.className = 'card-quantity';
+                qty.innerText = 'x' + deckCounts[card.id];
+                el.appendChild(qty);
+
+                el.onclick = () => showDetails(card);
+                el.oncontextmenu = (e) => { e.preventDefault(); removeFromDeck(card.id); };
+                el.onmouseenter = () => showDetails(card);
+                deckGrid.appendChild(el);
+            });
+        }
+
+        function createCardElement(card) {
+            const div = document.createElement('div');
+            div.className = 'card-item';
+            div.title = card.name;
+            const img = document.createElement('img');
+            img.src = card.img;
+            div.appendChild(img);
+            return div;
+        }
+
+        function showDetails(card) {
+            dImg.src = card.img;
+            document.getElementById('detail-name').innerText = card.name;
+            document.getElementById('detail-type-race').innerText = card.type + (card.rarity ? ` - Rareza: ${card.rarity}` : '');
+            document.getElementById('detail-edition').innerText = card.edition;
+            document.getElementById('detail-cost').innerText = card.cost;
+            document.getElementById('detail-strength').innerText = card.strength;
+            document.getElementById('detail-text').innerText = card.text;
+        }
+
+        window.addToDeck = function(card) {
+            const count = currentDeck.filter(c => c.id === card.id).length;
+            const isUnique = card.text ? card.text.includes("Única") : false;
+            
+            if (currentDeck.length >= 50) return alert("Mazo lleno (Max 50 cartas)");
+            if (isUnique && count >= 1) return alert("Solo puedes llevar 1 copia de una carta Única.");
+            if (!isUnique && count >= 3) return alert("Máximo 3 copias por carta.");
+
+            currentDeck.push(card);
+            renderDeck();
+        }
+
+        window.removeFromDeck = function(cardId) {
+            const index = currentDeck.findIndex(c => c.id === cardId);
+            if (index > -1) {
+                currentDeck.splice(index, 1);
+                renderDeck();
+            }
+        }
+
+        window.clearDeck = function() {
+            if(confirm('¿Seguro que deseas vaciar el mazo?')){
+                currentDeck = [];
+                renderDeck();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

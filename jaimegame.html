@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaime Guzman Simulator</title>
+    <link rel="stylesheet" href="css/jaimegame.css">
+</head>
+<body>
+    <div id="start-screen">
+        <h1>JAIME GUZMAN SIMULATOR</h1>
+        <button id="start-button">START</button>
+    </div>
+    <div id="game-container" style="display: none;">
+        <div id="timer-container">
+            <div>Tiempo</div>
+            <div id="timer">30</div>
+        </div>
+        <div id="score-container">
+            <div>Puntaje</div>
+            <div id="score">0</div>
+        </div>
+        <img id="target" src="img/JG_A.png" alt="Objetivo">
+    </div>
+    <div id="end-screen" style="display: none;">
+        <div id="final-message">
+            <h1>Juego Terminado</h1>
+        </div>
+        <div id="end-content">
+            <p id="final-score">Puntaje: 0</p>
+            <button id="restart-button">JUGAR DE NUEVO</button>
+        </div>
+    </div>
+    <audio id="click-sound" src="media/bang.mp3" preload="auto"></audio>
+    <audio id="hit-sound" src="media/oof.mp3" preload="auto"></audio>
+    <audio id="end-music" src="media/win.mp3" preload="auto"></audio>
+    <script src="js/jaimegame.js"></script>
+</body>
+</html>

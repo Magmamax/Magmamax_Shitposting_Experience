@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>⚙️ Admin: Actualizador de Cartas MyL</title>
+    <style>
+        body { background: #0d1115; color: #fff; font-family: sans-serif; padding: 40px; }
+        .container { max-width: 600px; margin: auto; background: #1a222c; padding: 30px; border-radius: 8px; border: 2px solid #00a8ff; }
+        h2 { text-align: center; color: #ffcc00; margin-top: 0;}
+        button { display: block; width: 100%; padding: 15px; margin: 15px 0; font-size: 16px; cursor: pointer; font-weight: bold; border: none; border-radius: 4px; color: white; transition: 0.2s;}
+        .btn-upload { background: #28a745; }
+        .btn-upload:hover { background: #218838; }
+        .btn-download { background: #007bff; display: none; }
+        .btn-download:hover { background: #0069d9; }
+        #log { margin-top: 20px; background: #111; padding: 15px; border: 1px dashed #44aaff; font-family: monospace; white-space: pre-wrap; font-size: 14px; border-radius: 5px; color: #aaa;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Panel de Administrador de Cartas</h2>
+        <p style="text-align:center; color: #ccc;">Sube uno o varios archivos CSV para añadir cartas. Luego descarga el archivo <b>database.js</b> actualizado y reemplaza el que está en tu carpeta <code>js/</code>.</p>
+        
+        <input type="file" id="csv-upload" accept=".csv" multiple style="display:none;">
+        <button class="btn-upload" onclick="document.getElementById('csv-upload').click()">📂 1. Subir archivos CSV (Uno o Múltiples)</button>
+        <button class="btn-download" id="btn-download" onclick="downloadJS()">💾 2. Descargar 'database.js'</button>
+        
+        <div id="log">Esperando para cargar la base de datos...</div>
+    </div>
+
+    <script src="js/database.js"></script>
+
+    <script>
+        window.mylDatabase = window.mylDatabase || [];
+        const logEl = document.getElementById('log');
+
+        window.onload = function() {
+            if(window.mylDatabase.length > 0) {
+                logEl.innerHTML = `✅ Base de datos actual cargada desde 'js/database.js'.\nTotal de cartas: ${window.mylDatabase.length}\n\nListo para importar nuevas cartas.`;
+            } else {
+                logEl.innerHTML = `⚠️ No se detectó 'js/database.js'.\nSi subes archivos, se creará una base de datos desde cero.`;
+            }
+        }
+
+        // Leer los CSV y no trabar el navegador
+        function parseCSVLine(str, delimiter) {
+            let result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < str.length; i++) {
+                let c = str[i];
+                if (c === '"') {
+                    if (i + 1 < str.length && str[i+1] === '"') { current += '"'; i++; } 
+                    else { inQuotes = !inQuotes; }
+                } else if (c === delimiter && !inQuotes) {
+                    result.push(current); current = '';
+                } else {
+                    current += c;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        document.getElementById('csv-upload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            
+            let filesProcessed = 0;
+            let addedCountTotal = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        let added = processCSV(event.target.result);
+                        addedCountTotal += added;
+                    } catch(err) {
+                        console.error("Error leyendo el CSV:", err);
+                    }
+                    
+                    filesProcessed++;
+                    if(filesProcessed === files.length) {
+                        document.getElementById('btn-download').style.display = 'block';
+                        logEl.innerHTML += `\n\n🟢 Se añadieron ${addedCountTotal} cartas nuevas provenientes del CSV.\nNuevo Total: ${window.mylDatabase.length} cartas.\n\nPresiona "Descargar" para guardar.`;
+                    }
+                };
+                reader.readAsText(files[i]);
+            }
+            e.target.value = ''; 
+        });
+
+        function processCSV(text) {
+            const lines = text.split(/\r\n|\n/);
+            if (lines.length < 2) return 0;
+            
+            let delimiter = lines[0].indexOf(';') > -1 ? ';' : ',';
+            const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase());
+            
+            const eI = headers.findIndex(h => h.includes('edición') || h.includes('edicion'));
+            const nI = headers.findIndex(h => h.includes('nombre') || h.includes('carta'));
+            const tI = headers.findIndex(h => h.includes('tipo'));
+            const rI = headers.findIndex(h => h.includes('rareza'));
+            
+            const idxEd = eI > -1 ? eI : 0;
+            const idxNa = nI > -1 ? nI : 1;
+            const idxTy = tI > -1 ? tI : 2;
+            const idxRa = rI > -1 ? rI : 3;
+
+            const newCards = [];
+            let idCounter = window.mylDatabase.length > 0 ? Math.max(...window.mylDatabase.map(c => c.id)) + 1 : 1;
+
+            for (let i = 1; i < lines.length; i++) {
+                let lineStr = lines[i].trim();
+                if (!lineStr) continue;
+
+                const cols = parseCSVLine(lineStr, delimiter);
+                
+                if (cols.length > idxNa && cols[idxNa].trim() !== "") {
+                    const name = cols[idxNa].trim();
+                    const edition = cols[idxEd] ? cols[idxEd].trim() : "Primera Era";
+                    const type = cols[idxTy] ? cols[idxTy].trim() : "Desconocido";
+                    const rarity = cols[idxRa] ? cols[idxRa].trim() : "Normal";
+
+                    let isOro = type.toLowerCase().includes('oro');
+                    let isAliado = type.toLowerCase().includes('aliado');
+
+                    newCards.push({
+                        id: idCounter++,
+                        name: name,
+                        type: type,
+                        rarity: rarity,
+                        edition: edition,
+                        cost: isOro ? "-" : "?",
+                        strength: isAliado ? "?" : "-",
+                        text: `Rareza: ${rarity} \n\n*Carta importada automáticamente.`,
+                        img: `https://via.placeholder.com/300x420/1a222c/ffcc00?text=${encodeURIComponent(name.split(' ').join('\n'))}`
+                    });
+                }
+            }
+            
+            if (newCards.length > 0) {
+                window.mylDatabase = window.mylDatabase.concat(newCards);
+                return newCards.length;
+            }
+            return 0;
+        }
+
+        // Descarga directa del archivo JS
+        function downloadJS() {
+            const jsTemplate = `/* ========================================================
+PLANTILLA PARA AGREGAR NUEVAS CARTAS:
+========================================================
+Para agregar una nueva carta, copia el bloque de abajo y pégalo 
+dentro del arreglo (dentro de los corchetes [ ]).
+Asegúrate de separar cada bloque con una coma (,) al final.
+
+{
+  "id": 9999,
+  "name": "Nombre",
+  "type": "Aliado",
+  "rarity": "Real",
+  "edition": "Edicion",
+  "cost": "2",
+  "strength": "3",
+  "text": "Rareza: Real \\n\\n*Texto.",
+  "img": "https://via.placeholder.com/300x420/1a222c/ffcc00?text=Nueva"
+}
+========================================================
+*/\n\nvar mylDatabase = `;
+
+            const fileContent = jsTemplate + JSON.stringify(window.mylDatabase, null, 2) + ";";
+            const blob = new Blob([fileContent], { type: 'application/javascript;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'database.js'; // Obligamos a que se guarde como JS
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logEl.innerHTML += `\n\n📥 Archivo 'database.js' descargado con éxito. Reemplázalo en tu carpeta 'js'.`;
+        }
+    </script>
+</body>
+</html>

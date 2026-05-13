@@ -1,0 +1,89 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(124, 157, 248);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column; /* Mantener la columna para centrar verticalmente */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+}
+
+.box {
+    display: grid; /* Cambiar a grid para disponer los elementos en una cuadrícula */
+    grid-template-columns: 1fr; /* Una sola columna que ocupa todo el ancho del contenedor */
+    grid-template-rows: auto auto; /* Dos filas de tamaño automático */
+    align-items: center; /* Centrar verticalmente */
+    padding: 0.5vw;
+}
+
+.miau {
+    display: flex;
+    justify-content: center; /* Centrar el contenido dentro del div */
+    width: auto; /* Ajustar según el contenido */
+    padding: 0;
+}
+
+.miau img {
+    max-width: 100%; /* La imagen se redimensionará según el ancho del contenedor */
+    height: auto;
+}
+
+.boton {
+    display: flex;
+    flex-direction: column; /* Asegurar que el botón y el h1 estén en columna */
+    align-items: center;
+    margin-top: 20px;
+}
+
+button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-bottom: 10px; /* Añadir un margen inferior para separar el botón del h1 */
+    border-radius: 10px;
+    background-color: rgb(205, 156, 252);
+    border-color:blueviolet;
+    width: 10vh;
+    
+}
+
+h1 {
+    margin: 0; /* Asegurarse de que no haya margen adicional */
+}
+
+.footer {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    margin-top: 200px; /* Añadir un margen superior para dejar un espacio debajo del container */
+
+}
+
+.footer ul {
+    display: flex;
+    flex-direction: column; /* Cambiar la dirección del flex a columna */
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer li {
+    margin: 5px 0; /* Añadir un margen vertical entre los elementos */
+}
