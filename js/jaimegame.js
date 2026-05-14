@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
     const startScreen = document.getElementById('start-screen');
     const startButton = document.getElementById('start-button');
     const gameContainer = document.getElementById('game-container');
@@ -11,22 +11,62 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const endMusic = document.getElementById('end-music');
     const timerElement = document.getElementById('timer');
     const scoreElement = document.getElementById('score');
+
     const gameDuration = 30; 
     let score = 0;
     let timeLeft = gameDuration;
-    let gameInterval;
     let timerInterval;
+    let animationId;
+    
+    let posX, posY, speedX, speedY;
+    let directionX = -1;
+    let isHit = false;
 
-    function getRandomPosition() {
+    target.addEventListener('dragstart', (e) => e.preventDefault());
+
+    function resetTargetPosition() {
         const containerRect = gameContainer.getBoundingClientRect();
-        const x = Math.random() * (containerRect.width - target.offsetWidth);
-        const y = Math.random() * (containerRect.height - target.offsetHeight);
-        return { x, y };
+        directionX = Math.random() > 0.5 ? 1 : -1;
+        speedX = (Math.random() * 6 + 4) * directionX;
+        speedY = (Math.random() - 0.5) * 6; // Movimiento vertical
+
+        if (directionX === -1) {
+            posX = containerRect.width;
+        } else {
+            posX = -target.offsetWidth;
+        }
+        
+        // Asegura que aparezca dentro de los bordes superior e inferior
+        const maxPosNetoY = containerRect.height - target.offsetHeight;
+        posY = Math.random() * maxPosNetoY;
+        
+        isHit = false;
+        target.src = 'img/JG_A.png';
+        target.style.display = 'block';
     }
 
-    function moveTarget() {
-        const { x, y } = getRandomPosition();
-        target.style.transform = `translate(${x}px, ${y}px)`;
+    function move() {
+        const containerRect = gameContainer.getBoundingClientRect();
+        posX += speedX;
+        posY += speedY;
+
+        // Rebote estricto en bordes superior e inferior
+        if (posY <= 0) {
+            posY = 0;
+            speedY *= -1;
+        } else if (posY >= containerRect.height - target.offsetHeight) {
+            posY = containerRect.height - target.offsetHeight;
+            speedY *= -1;
+        }
+        
+        if ((directionX === -1 && posX < -target.offsetWidth) || 
+            (directionX === 1 && posX > containerRect.width)) {
+            resetTargetPosition();
+        }
+
+        target.style.left = `${posX}px`;
+        target.style.top = `${posY}px`;
+        animationId = requestAnimationFrame(move);
     }
 
     function startGame() {
@@ -37,50 +77,44 @@ document.addEventListener('DOMContentLoaded', (event) => {
         timeLeft = gameDuration;
         scoreElement.textContent = score;
         timerElement.textContent = timeLeft;
-        moveTarget();
+        resetTargetPosition();
+        move();
 
-        gameInterval = setInterval(moveTarget, 1000);
         timerInterval = setInterval(() => {
             timeLeft--;
             timerElement.textContent = timeLeft;
-            if (timeLeft <= 0) {
-                endGame();
-            }
+            if (timeLeft <= 0) endGame();
         }, 1000);
     }
 
     function endGame() {
-        clearInterval(gameInterval);
+        cancelAnimationFrame(animationId);
         clearInterval(timerInterval);
         gameContainer.style.display = 'none';
-        endScreen.style.display = 'block';
+        endScreen.style.display = 'flex'; // Cambiado a flex para la nueva distribución
         finalScoreElement.textContent = `Puntaje: ${score}`;
         endMusic.play();
     }
 
     function handleClickOnTarget(event) {
-        event.stopPropagation(); 
-        hitSound.play(); 
-        clickSound.play(); 
-        target.src = 'img/JG_D.png'; 
+        event.stopPropagation();
+        if (isHit) return;
+        isHit = true;
+        hitSound.play();
+        clickSound.play();
+        target.src = 'img/JG_D.png';
         score++;
         scoreElement.textContent = score;
-
         setTimeout(() => {
-            target.style.display = 'none'; 
-            setTimeout(() => {
-                target.style.display = 'block'; 
-                target.src = 'img/JG_A.png'; 
-            }, 500); 
-        }, 1000); 
-    }
-
-    function handleClickAnywhere() {
-        clickSound.play(); 
+            target.style.display = 'none';
+            resetTargetPosition();
+        }, 300);
     }
 
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
     target.addEventListener('click', handleClickOnTarget);
-    document.addEventListener('click', handleClickAnywhere);
+    document.addEventListener('click', () => {
+        if(gameContainer.style.display === 'block') clickSound.play();
+    });
 });
