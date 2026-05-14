@@ -18,60 +18,60 @@
             position: relative; 
         }
 
-        /* Estilo del contador en la parte superior */
+        /* Estilo del contador en la parte superior (Responsivo) */
         #counter-container {
             position: absolute;
-            top: 30px;
-            font-size: 36px;
+            top: 5vh; /* 5% de la altura de la pantalla */
+            font-size: 5vmin; /* Escala con la pantalla */
             font-weight: bold;
             color: #333333;
             z-index: 1000; 
             user-select: none;
             pointer-events: none; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 0.3vmin 0.3vmin 0.5vmin rgba(0,0,0,0.2);
+            text-align: center;
+            width: 100%;
         }
 
         #counter-val {
-            color: #ff3b3b;
+            color: #ff3b3b; 
         }
 
-        /* Estilo del botón redondo con relieve */
+        /* Estilo del botón redondo con relieve (Responsivo) */
         #poshanka-btn {
             background-color: #ff3b3b;
             color: white;
-            font-size: 18px; 
+            font-size: 3.5vmin; /* Texto escalable */
             font-weight: bold;
             border: none;
             border-radius: 50%;
-            width: 150px; 
-            height: 150px; 
+            /* El ancho y alto son el 25% de la dimensión más pequeña de la pantalla */
+            width: 25vmin; 
+            height: 25vmin; 
             cursor: pointer;
-            box-shadow: 0 10px #a60000;
+            box-shadow: 0 1.5vmin #a60000;
             transition: box-shadow 0.1s, transform 0.1s;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            text-shadow: 0.1vmin 0.1vmin 0.2vmin rgba(0,0,0,0.3);
             outline: none;
             user-select: none;
             position: relative;
             z-index: 999; 
         }
 
-        /* Efecto al presionar el botón */
+        /* Efecto al presionar el botón (Responsivo) */
         #poshanka-btn:active {
-            box-shadow: 0 2px #a60000;
-            transform: translateY(8px);
+            box-shadow: 0 0.3vmin #a60000;
+            transform: translateY(1.2vmin);
         }
 
-        /* Clase general para cada instancia de animación */
+        /* Clase general para cada instancia de animación (Responsivo) */
         .animacion-instancia {
             position: absolute;
-            /* Usamos la altura como la limitante principal en lugar del ancho */
-            height: 150px; 
-            width: auto; /* El ancho se ajustará a la proporción original */
+            height: 25vmin; /* Misma proporción base que el botón */
+            width: auto; 
             user-select: none;
             pointer-events: none; 
             z-index: 10; 
-            /* Esto mantiene la imagen centrada desde su punto de origen (abajo al centro) 
-               evitando que salte a los lados si los lienzos tienen anchos distintos */
             transform: translate(-50%, -100%);
             transform-origin: bottom center;
         }
@@ -129,9 +129,6 @@
         idleFrames.forEach(src => { const img = new Image(); img.src = src; });
 
         const frameRate = 70; 
-        const alturaImagen = 150; 
-        // Margen estimado para evitar que la imagen salga de la pantalla por los bordes
-        const margenLateral = 100; 
 
         btn.addEventListener('click', () => {
             contadorClics++;
@@ -143,12 +140,25 @@
             const imgAnim = document.createElement('img');
             imgAnim.classList.add('animacion-instancia');
 
-            // Posición aleatoria ajustada para el nuevo "transform" (translate -50%, -100%)
-            // Esto asegura que las coordenadas indican dónde irán los "pies" del personaje.
+            // Cálculo dinámico de los límites de la pantalla para mantenerlo responsivo
+            const viewportAncho = window.innerWidth;
+            const viewportAlto = window.innerHeight;
+            const vminPixel = Math.min(viewportAncho, viewportAlto);
+            
+            // La altura de la imagen es aproximadamente el 25% del vmin
+            const alturaImagenEst = vminPixel * 0.25; 
+            
+            // Margen para que no salgan cortados en los bordes izquierdo/derecho
+            const margenLateral = viewportAncho * 0.15; 
+            // Margen superior para no tapar el contador
+            const margenSuperior = viewportAlto * 0.15; 
+
             const minX = margenLateral;
-            const maxX = window.innerWidth - margenLateral;
-            const minY = alturaImagen;
-            const maxY = window.innerHeight;
+            const maxX = viewportAncho - margenLateral;
+            
+            // El Y dictamina dónde pisan los "pies" del personaje.
+            const minY = alturaImagenEst + margenSuperior;
+            const maxY = viewportAlto - (viewportAlto * 0.05); // Dejamos un 5% de margen abajo
             
             const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
             const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
@@ -172,12 +182,8 @@
             }, frameRate);
         });
 
-        // Función para la animación Idle
         function iniciarIdle(imagenElemento) {
             let idleIndex = 0;
-            
-            // Ya no hay transformaciones ni escalas en Javascript. 
-            // El CSS mantendrá la altura consistente de forma natural.
             imagenElemento.src = idleFrames[idleIndex];
             
             setInterval(() => {
