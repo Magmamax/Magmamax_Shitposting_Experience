@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poshanka</title>
+    <style>
+        /* Fondo blanco, centrado del contenido y sin barras de desplazamiento */
+        body {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden; 
+            position: relative; 
+        }
+
+        /* Estilo del contador en la parte superior */
+        #counter-container {
+            position: absolute;
+            top: 30px;
+            font-size: 36px;
+            font-weight: bold;
+            color: #333333;
+            z-index: 1000; 
+            user-select: none;
+            pointer-events: none; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #counter-val {
+            color: #ff3b3b;
+        }
+
+        /* Estilo del botón redondo con relieve */
+        #poshanka-btn {
+            background-color: #ff3b3b;
+            color: white;
+            font-size: 18px; 
+            font-weight: bold;
+            border: none;
+            border-radius: 50%;
+            width: 150px; 
+            height: 150px; 
+            cursor: pointer;
+            box-shadow: 0 10px #a60000;
+            transition: box-shadow 0.1s, transform 0.1s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            outline: none;
+            user-select: none;
+            position: relative;
+            z-index: 999; 
+        }
+
+        /* Efecto al presionar el botón */
+        #poshanka-btn:active {
+            box-shadow: 0 2px #a60000;
+            transform: translateY(8px);
+        }
+
+        /* Clase general para cada instancia de animación */
+        .animacion-instancia {
+            position: absolute;
+            /* Usamos la altura como la limitante principal en lugar del ancho */
+            height: 150px; 
+            width: auto; /* El ancho se ajustará a la proporción original */
+            user-select: none;
+            pointer-events: none; 
+            z-index: 10; 
+            /* Esto mantiene la imagen centrada desde su punto de origen (abajo al centro) 
+               evitando que salte a los lados si los lienzos tienen anchos distintos */
+            transform: translate(-50%, -100%);
+            transform-origin: bottom center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="counter-container">POSHANKA COUNTER: <span id="counter-val">0</span></div>
+
+    <button id="poshanka-btn">POSHANKA!!</button>
+
+    <script>
+        const btn = document.getElementById('poshanka-btn');
+        const counterVal = document.getElementById('counter-val');
+        let contadorClics = 0;
+
+        // Arrays con las rutas de las imágenes
+        const poshankaFrames = [
+            'img/poshanka/poshanka_/442-00-1526.png',
+            'img/poshanka/poshanka_/442-01-1526.png',
+            'img/poshanka/poshanka_/442-02-1528.png',
+            'img/poshanka/poshanka_/442-03-1528.png',
+            'img/poshanka/poshanka_/442-04-1523.png',
+            'img/poshanka/poshanka_/442-05-1523.png',
+            'img/poshanka/poshanka_/442-06-1530.png',
+            'img/poshanka/poshanka_/442-07-1525.png',
+            'img/poshanka/poshanka_/442-08-1525.png',
+            'img/poshanka/poshanka_/442-09-1767.png',
+            'img/poshanka/poshanka_/442-10-1767.png',
+            'img/poshanka/poshanka_/442-11-1768.png',
+            'img/poshanka/poshanka_/442-12-1768.png',
+            'img/poshanka/poshanka_/442-13-1769.png',
+            'img/poshanka/poshanka_/442-14-1769.png',
+            'img/poshanka/poshanka_/442-15-1522.png',
+            'img/poshanka/poshanka_/442-16-1522.png',
+            'img/poshanka/poshanka_/442-17-1527.png',
+            'img/poshanka/poshanka_/442-18-1527.png',
+            'img/poshanka/poshanka_/442-19-1524.png',
+            'img/poshanka/poshanka_/442-20-1524.png',
+            'img/poshanka/poshanka_/442-21-1529.png',
+            'img/poshanka/poshanka_/442-22-1529.png'
+        ];
+
+        const idleFrames = [
+            'img/poshanka/idle/001-00-873.png',
+            'img/poshanka/idle/001-01-875.png',
+            'img/poshanka/idle/001-02-869.png',
+            'img/poshanka/idle/001-03-874.png',
+            'img/poshanka/idle/001-04-877.png',
+            'img/poshanka/idle/001-05-879.png'
+        ];
+
+        // Precargar las imágenes
+        poshankaFrames.forEach(src => { const img = new Image(); img.src = src; });
+        idleFrames.forEach(src => { const img = new Image(); img.src = src; });
+
+        const frameRate = 70; 
+        const alturaImagen = 150; 
+        // Margen estimado para evitar que la imagen salga de la pantalla por los bordes
+        const margenLateral = 100; 
+
+        btn.addEventListener('click', () => {
+            contadorClics++;
+            counterVal.innerText = contadorClics;
+
+            const audio = new Audio('img/poshanka/poshanka_audio.mp3');
+            audio.play();
+            
+            const imgAnim = document.createElement('img');
+            imgAnim.classList.add('animacion-instancia');
+
+            // Posición aleatoria ajustada para el nuevo "transform" (translate -50%, -100%)
+            // Esto asegura que las coordenadas indican dónde irán los "pies" del personaje.
+            const minX = margenLateral;
+            const maxX = window.innerWidth - margenLateral;
+            const minY = alturaImagen;
+            const maxY = window.innerHeight;
+            
+            const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+            const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+
+            imgAnim.style.left = `${randomX}px`;
+            imgAnim.style.top = `${randomY}px`;
+
+            document.body.appendChild(imgAnim);
+
+            let frameIndex = 0;
+            imgAnim.src = poshankaFrames[frameIndex];
+
+            const poshankaInterval = setInterval(() => {
+                frameIndex++;
+                if (frameIndex < poshankaFrames.length) {
+                    imgAnim.src = poshankaFrames[frameIndex];
+                } else {
+                    clearInterval(poshankaInterval);
+                    iniciarIdle(imgAnim);
+                }
+            }, frameRate);
+        });
+
+        // Función para la animación Idle
+        function iniciarIdle(imagenElemento) {
+            let idleIndex = 0;
+            
+            // Ya no hay transformaciones ni escalas en Javascript. 
+            // El CSS mantendrá la altura consistente de forma natural.
+            imagenElemento.src = idleFrames[idleIndex];
+            
+            setInterval(() => {
+                idleIndex = (idleIndex + 1) % idleFrames.length;
+                imagenElemento.src = idleFrames[idleIndex];
+            }, 70); 
+        }
+    </script>
+</body>
+</html>
