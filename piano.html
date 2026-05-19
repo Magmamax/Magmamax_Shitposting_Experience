@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sampler Master Pro - Console v2.3.1 (Expanded Fullscreen Mobile)</title>
+    <title>Sampler Master Pro - Console v2.0.3 (Continuous White Matrix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <link href="https://fonts.cdnfonts.com/css/seven-segment" rel="stylesheet">
     <style>
@@ -14,7 +13,8 @@
             --shadow-rigid: #858c94;
             --highlight-rigid: #f8f9fa;
             --digital-font: 'Seven Segment', sans-serif;
-            --trim-color: #f1c40f;
+            --numpad-blue: #0288d1;
+            --topnum-red: #c0392b;
         }
 
         body { 
@@ -23,15 +23,11 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            min-height: 100vh; 
+            height: 100vh; 
             font-family: sans-serif; 
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            overflow: hidden;
+            user-select: none; 
         }
 
-        /* --- CHASIS BASE (MODO DESKTOP STANDARD) --- */
         .audio-console { 
             background: var(--panel-color); 
             width: 1200px; 
@@ -41,64 +37,124 @@
             border-right: 4px solid var(--shadow-rigid); 
             border-bottom: 25px solid #2c3e50; 
             box-shadow: 0 40px 70px rgba(0,0,0,0.6); 
-            box-sizing: border-box;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s, height 0.4s;
         }
 
-        /* TOP BAR */
-        .console-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .console-tabs { display: none; gap: 5px; }
-        .tab-btn {
-            background: #34495e; color: #fff; border: 2px solid #2c3e50; padding: 8px 16px;
-            font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 2px 0 #2c3e50;
+        .header-rack { 
+            display: grid; 
+            grid-template-columns: 1fr 180px; 
+            gap: 20px; 
+            background: #b2b9bd; 
+            padding: 20px; 
+            border: 2px solid #8e969c; 
+            margin-bottom: 25px; 
+            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.1); 
         }
-        .tab-btn.active-tab { background: var(--lcd-text); color: #000; border-color: #0099cc; box-shadow: 0 0 8px var(--lcd-text); }
 
-        .mode-toggle-btn { background: #7f8c8d; color: #fff; border: 2px solid #666; padding: 8px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 3px 0 #444; z-index: 100; }
-        .mode-toggle-btn.mode-mobile { background: #e67e22; border-color: #d35400; box-shadow: 0 3px 0 #d35400; }
-
-        /* MÓDULOS DE AUDIO HARDWARE */
-        .header-rack { display: grid; grid-template-columns: 1fr 180px; gap: 20px; background: #b2b9bd; padding: 20px; border: 2px solid #8e969c; margin-bottom: 25px; box-shadow: inset 4px 4px 0 rgba(0,0,0,0.1); }
-        .monitor-container { position: relative; margin-bottom: 15px; }
-        .screen-lcd { background: var(--lcd-bg); height: 130px; border: 3px solid #222; position: relative; overflow: hidden; }
+        .screen-lcd { 
+            background: var(--lcd-bg); 
+            height: 130px; 
+            border: 3px solid #222; 
+            margin-bottom: 15px; 
+            position: relative; 
+            overflow: hidden; 
+        }
         canvas { width: 100%; height: 100%; display: block; }
 
-        .trim-slider {
-            position: absolute; top: 0; width: 24px; height: 100%; background: var(--trim-color); cursor: ew-resize; z-index: 10;
-            box-shadow: 0 0 8px var(--trim-color); border-left: 1px solid #000; border-right: 1px solid #000; display: none; 
+        .input-group { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: center; }
+        .digital-input { 
+            background: #000; 
+            border: 2px solid #333; 
+            color: var(--lcd-text); 
+            padding: 8px; 
+            font-family: var(--digital-font); 
+            font-size: 24px; 
+            text-align: center; 
+            outline: none; 
+            height: 45px; 
+            box-sizing: border-box; 
         }
-        .trim-slider::after { content: ''; position: absolute; top: 50%; left: 10px; width: 4px; height: 24px; background: #000; transform: translateY(-50%); }
-
-        .input-group { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: center; margin-top: 15px; }
-        .digital-input { background: #000; border: 2px solid #333; color: var(--lcd-text); padding: 8px; font-family: var(--digital-font); font-size: 24px; text-align: center; outline: none; height: 45px; box-sizing: border-box; }
 
         .btn-stack { display: flex; flex-direction: column; gap: 8px; }
-        .btn-console { height: 35px; border: 2px solid #2c3e50; color: white; font-weight: bold; font-size: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 3px 0 #2c3e50; display: flex; align-items: center; justify-content: center; }
+        .btn-console { 
+            height: 35px; 
+            border: 2px solid #2c3e50; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 10px; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            box-shadow: 0 3px 0 #2c3e50; 
+            transition: 0.05s; 
+        }
         .btn-console:active { transform: translateY(2px); box-shadow: 0 1px 0 #2c3e50; }
         .btn-save-green { background: #27ae60; box-shadow: 0 3px 0 #1e8449; height: 45px; }
 
-        /* PIANO DESKTOP */
-        .piano-container { display: flex; background: #2c3e50; padding: 30px 15px; border: 2px solid #1a1a1a; margin-bottom: 30px; box-shadow: inset 0 10px 20px rgba(0,0,0,0.6); justify-content: center; flex-direction: column; align-items: center; box-sizing: border-box;}
+        .piano-container { 
+            display: flex; 
+            background: #2c3e50; 
+            padding: 30px 15px; 
+            border: 2px solid #1a1a1a; 
+            margin-bottom: 30px; 
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.6); 
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
         .piano-container.focused { border-color: var(--lcd-text); box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
-        .piano-scroll-wrapper { width: 100%; overflow: hidden; }
-        .piano { display: flex; background: #000; padding: 2px; position: relative; width: max-content; margin: 0 auto; }
+        .piano { display: flex; background: #000; padding: 2px; position: relative; }
 
         .white { 
-            width: 28px; height: 160px; background: #fff; border: 1px solid #999; border-bottom: 12px solid #ddd; margin: 0 1px; border-radius: 0 0 4px 4px; z-index: 1; cursor: pointer;
-            display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 10px; font-weight: bold; color: #bbb;
+            width: 28px; 
+            height: 160px; 
+            background: #fff; 
+            border: 1px solid #999; 
+            border-bottom: 12px solid #ddd; 
+            margin: 0 1px; 
+            border-radius: 0 0 4px 4px; 
+            z-index: 1; 
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #bbb;
         }
         .white.active-key { border-bottom: 2px solid #bbb; background: #f0f0f0; transform: translateY(2px); }
-        .white.numpad-active { background: #e3f2fd; border-color: var(--lcd-text); color: #0288d1; }
+        
+        .white.topnum-active { background: #f9ebea; border-color: var(--topnum-red); color: var(--topnum-red); }
+        .white.numpad-active { background: #e3f2fd; border-color: var(--lcd-text); color: var(--numpad-blue); }
 
         .black { 
-            width: 18px; height: 100px; background: #1a1a1a; border: 1px solid #000; border-bottom: 8px solid #444; margin: 0 -10px; z-index: 2; cursor: pointer;
-            display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 8px; color: #555;
+            width: 18px; 
+            height: 100px; 
+            background: #1a1a1a; 
+            border: 1px solid #000; 
+            border-bottom: 8px solid #444; 
+            margin: 0 -10px; 
+            z-index: 2; 
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 6px;
+            font-size: 8px;
+            color: #555;
         }
         .black.active-key { border-bottom: 2px solid #000; background: #333; transform: translateY(2px); }
 
-        /* BIBLIOTECA DESKTOP */
         .tracks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .track-slot { background: #a6acaf; padding: 15px; display: grid; grid-template-columns: 50px 1fr 45px; align-items: center; gap: 15px; border: 2px solid #8e969c; box-shadow: 2px 2px 0 var(--highlight-rigid); }
+        .track-slot { 
+            background: #a6acaf; 
+            padding: 15px; 
+            display: grid; 
+            grid-template-columns: 50px 1fr 45px; 
+            align-items: center; 
+            gap: 15px; 
+            border: 2px solid #8e969c; 
+            box-shadow: 2px 2px 0 var(--highlight-rigid); 
+        }
         .track-content { display: flex; flex-direction: column; gap: 5px; }
         .mini-lcd { background: #000; height: 35px; border: 2px solid #222; overflow: hidden; }
         .name-lcd-slot { background: #000; padding: 4px; border: 1px solid #222; color: #444; font-family: var(--digital-font); font-size: 16px; text-align: center; }
@@ -111,121 +167,18 @@
         .active-track .rocker .on-label { background: #111; color: var(--lcd-text); box-shadow: inset 0 6px 10px rgba(0,0,0,0.8); }
 
         .btn-del { width: 40px; height: 40px; background: #c0392b; color: white; border: 2px solid #7b241c; cursor: pointer; font-weight: bold; }
-
-        /* ==================================================================================
-           --- CONFIGURACIÓN RESPONSIVA AVANZADA Y DIMENSIONES EXPANDIDAS GIRADAS EN 90° ---
-           ================================================================================== */
-        
-        .is-mobile-forced {
-            /* EXPANSION CRÍTICA: Escalamos el view móvil panorámico a 1150px de ancho de simulación */
-            width: 1150px !important;   
-            height: 520px !important;  
-            padding: 15px !important;
-            border-bottom: 8px solid #2c3e50 !important;
-            
-            /* Rotación forzada a 90° en el eje central */
-            transform: rotate(-90deg); 
-            display: flex;
-            flex-direction: column;
-        }
-
-        .is-mobile-forced .console-top-bar { margin-bottom: 10px; }
-        .is-mobile-forced .console-tabs { display: flex; }
-        
-        /* Ajuste de contenedores para heredar el ancho expandido sin recortes */
-        .is-mobile-forced .header-rack,
-        .is-mobile-forced .piano-container,
-        .is-mobile-forced .tracks-grid {
-            display: none; 
-            margin-bottom: 0;
-            width: 100%;
-            height: calc(100% - 50px) !important;
-            box-sizing: border-box;
-        }
-
-        /* --- PESTAÑA GRABADOR MÓVIL --- */
-        .is-mobile-forced[data-active-tab="recorder"] .header-rack { display: grid; grid-template-columns: 1fr 180px; padding: 15px; gap: 15px; }
-        .is-mobile-forced[data-active-tab="recorder"] .screen-lcd { height: 160px; }
-
-        /* --- PESTAÑA PIANO EXPANDIDO COMPLETO --- */
-        .is-mobile-forced[data-active-tab="piano"] .piano-container { 
-            display: flex; 
-            padding: 0px; 
-            background: #1a1a1a;
-            border: none;
-            box-shadow: none;
-        }
-        .is-mobile-forced[data-active-tab="piano"] .piano-scroll-wrapper {
-            width: 100%;
-            height: 100%;
-            overflow-x: auto; /* Permite scroll solo si la pantalla física es menor al render del proyecto */
-        }
-        .is-mobile-forced .piano-scroll-wrapper::-webkit-scrollbar { display: none; } /* Ocultar barra */
-        
-        .is-mobile-forced[data-active-tab="piano"] .piano { 
-            height: 100%; 
-            padding: 0; 
-            border: none; 
-            width: 100%; /* El piano ahora se estira a lo ancho de la nueva resolución móvil */
-            justify-content: space-between; 
-        }
-        
-        /* Redimensionamiento proporcional para que entren las 49 teclas completas */
-        .is-mobile-forced[data-active-tab="piano"] .white { 
-            height: 100%; 
-            flex-grow: 1; /* Distribuye el espacio de forma uniforme */
-            min-width: 22px; 
-            border-bottom: 15px solid #ddd;
-        }
-        .is-mobile-forced[data-active-tab="piano"] .black { 
-            height: 65%; 
-            width: 14px; 
-            margin: 0 -7px; 
-            border-bottom: 10px solid #444;
-        }
-
-        /* --- PESTAÑA BIBLIOTECA EXPANDIDA --- */
-        .is-mobile-forced[data-active-tab="library"] .tracks-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(3, 1fr); 
-            gap: 10px; 
-            padding: 0px; 
-        }
-        .is-mobile-forced[data-active-tab="library"] .track-slot { 
-            padding: 12px; 
-            gap: 15px; 
-            height: 100%; 
-            box-sizing: border-box;
-            grid-template-columns: 60px 1fr 50px; 
-        }
-        .is-mobile-forced[data-active-tab="library"] .rocker { width: 100%; height: 100%; }
-        .is-mobile-forced[data-active-tab="library"] .mini-lcd { height: 100%; min-height: 40px; }
-        .is-mobile-forced[data-active-tab="library"] .btn-del { height: 100%; width: 100%; }
+        .rec-active { animation: pulse 0.8s infinite; background: #ff0000 !important; }
+        @keyframes pulse { 50% { filter: brightness(1.3); } }
     </style>
 </head>
 <body>
 
-    <div class="audio-console" id="console-chasis" data-active-tab="recorder">
-        
-        <div class="console-top-bar">
-            <div class="console-tabs" id="tabs-group">
-                <button class="tab-btn active-tab" onclick="switchTab('recorder')">● Grabador</button>
-                <button class="tab-btn" onclick="switchTab('piano')">⌨ Piano</button>
-                <button class="tab-btn" onclick="switchTab('library')">📁 Biblioteca</button>
-            </div>
-            <button id="view-mode-toggle" class="mode-toggle-btn">Probar Móvil (90°)</button>
-        </div>
+    <div class="audio-console">
+        <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 10px; font-weight: bold;">SAMPLER CONSOLE MK-II // DIATONIC CONTINUOUS MATRIX v2.0.3</div>
 
         <div class="header-rack">
             <div class="monitor-area">
-                <div class="monitor-container">
-                    <div class="screen-lcd" id="lcd-container">
-                        <div id="trim-start" class="trim-slider"></div>
-                        <canvas id="mainCanvas"></canvas>
-                        <div id="trim-end" class="trim-slider"></div>
-                    </div>
-                </div>
+                <div class="screen-lcd"><canvas id="mainCanvas"></canvas></div>
                 <div class="input-group">
                     <input type="text" id="name-tag" class="digital-input" value="- - - - - -">
                     <button id="save-btn" class="btn-console btn-save-green">Guardar Audio</button>
@@ -240,11 +193,13 @@
         </div>
 
         <div class="piano-container" id="piano-focus-zone">
-            <div class="piano-scroll-wrapper">
-                <div class="piano" id="piano-keys"></div>
+            <div class="piano" id="piano-keys"></div>
+            <div style="font-size: 10px; color: #7f8c8d; margin-top: 15px; font-family: monospace; text-align: center;">
+                🔴 BLANCAS-ROJAS (Fila Superior 1-0): A3 a C4 &nbsp;&nbsp;|&nbsp;&nbsp; 🔵 BLANCAS-AZULES (Numpad 1-0): D4 a E5
             </div>
         </div>
 
+        <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 10px; font-weight: bold;">TRACK LIBRARY</div>
         <div class="tracks-grid" id="slots"></div>
 
         <audio id="preview-audio" style="display:none"></audio>
@@ -253,62 +208,71 @@
     <script>
         const DEFAULT_NAME = "- - - - - -";
         let sampler = null, tracks = [], tempUrl = null, activeId = null, currentWave = [], recording = false;
-        let isPianoActive = false, isMouseDown = false, scan = 0, currentPlayingSource = null; 
-        let rawAudioBuffer = null, trimStartPercent = 0, trimEndPercent = 100;
-
-        const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
-        const numMap = { '1':'C4', '2':'D4', '3':'E4', '4':'F4', '5':'G4', '6':'A4', '7':'B4', '8':'C5', '9':'D5', '0':'E5' };
-
-        // --- SISTEMA INTERRUPTOR CON GIRO 90° REESCALADO ---
-        const toggleBtn = document.getElementById('view-mode-toggle');
-        const chasis = document.getElementById('console-chasis');
+        let isPianoActive = false, isMouseDown = false, scan = 0;
         
-        toggleBtn.onclick = () => {
-            if(chasis.classList.contains('is-mobile-forced')) {
-                chasis.classList.remove('is-mobile-forced');
-                toggleBtn.classList.remove('mode-mobile');
-                toggleBtn.innerText = "Probar Móvil (90°)";
-                document.querySelector('.header-rack').style.display = 'grid';
-                document.querySelector('.piano-container').style.display = 'flex';
-                document.querySelector('.tracks-grid').style.display = 'grid';
-            } else {
-                chasis.classList.add('is-mobile-forced');
-                toggleBtn.classList.add('mode-mobile');
-                toggleBtn.innerText = "Modo Desktop";
-                switchTab(chasis.getAttribute('data-active-tab') || 'recorder');
-            }
-        };
+        const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
+        
+        let topNumWhiteNotes = [];
+        let numpadWhiteNotes = [];
+        const dualKeyboardMap = {};
 
-        function switchTab(tabName) {
-            chasis.setAttribute('data-active-tab', tabName);
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active-tab'));
-            const btnIdx = tabName === 'recorder' ? 0 : tabName === 'piano' ? 1 : 2;
-            document.getElementById('tabs-group').children[btnIdx].classList.add('active-tab');
-            
-            if(tabName === 'recorder') {
-                setTimeout(() => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }, 50);
-            }
-        }
-
-        // --- CONSTRUCTOR DE MATRIZ DE NOTAS ---
         function createPiano() {
             const container = document.getElementById('piano-keys');
             const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-            const numpadNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
-            let html = ""; let keyCount = 0;
+            
+            // Recolectar todas las notas blancas del instrumento de 49 teclas
+            let allWhiteNotesInOrder = [];
+            for (let octave = 2; octave <= 6; octave++) {
+                for (let i = 0; i < noteNames.length; i++) {
+                    if (octave === 2 && i < 5) continue;
+                    if (octave === 6 && i > 5) break;
+                    if (!noteNames[i].includes("#")) {
+                        allWhiteNotesInOrder.push(noteNames[i] + octave);
+                    }
+                }
+            }
+
+            // Localizar el primer 'La' (A) disponible en las teclas blancas para el anclaje
+            const pivotIndex = allWhiteNotesInOrder.findIndex(note => note.startsWith("A")); 
+
+            // Bloque Rojo (Teclado Superior: 10 notas consecutivas desde A)
+            for(let i = 0; i < 10; i++) {
+                topNumWhiteNotes.push(allWhiteNotesInOrder[pivotIndex + i]);
+            }
+            // Bloque Azul (Numpad: las siguientes 10 notas consecutivas en la escala lineal)
+            for(let i = 0; i < 10; i++) {
+                numpadWhiteNotes.push(allWhiteNotesInOrder[pivotIndex + 10 + i]);
+            }
+
+            // Asignación de códigos de teclado físico a sus respectivas notas blancas consecutivas
+            const topCodes = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'];
+            const padCodes = ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6', 'Numpad7', 'Numpad8', 'Numpad9', 'Numpad0'];
+            
+            topCodes.forEach((code, idx) => dualKeyboardMap[code] = topNumWhiteNotes[idx]);
+            padCodes.forEach((code, idx) => dualKeyboardMap[code] = numpadWhiteNotes[idx]);
+
+            let html = "";
+            let keyCount = 0;
 
             for (let octave = 2; octave <= 6; octave++) {
                 for (let i = 0; i < noteNames.length; i++) {
                     if (octave === 2 && i < 5) continue;
                     if (octave === 6 && i > 5) break;
+
                     const note = noteNames[i] + octave;
                     const isBlack = note.includes("#");
-                    const isNumpad = !isBlack && numpadNotes.includes(note);
                     
-                    html += `<div class="key ${isBlack ? 'black' : 'white'} ${isNumpad ? 'numpad-active' : ''}" data-note="${note}">
+                    let highlightClass = "";
+                    if (!isBlack) {
+                        if (topNumWhiteNotes.includes(note)) highlightClass = "topnum-active";
+                        else if (numpadWhiteNotes.includes(note)) highlightClass = "numpad-active";
+                    }
+                    
+                    html += `<div class="key ${isBlack ? 'black' : 'white'} ${highlightClass}" data-note="${note}">
                                 ${isBlack ? '' : `<span style="pointer-events:none;">${noteNames[i]}</span>`}
                              </div>`;
-                    keyCount++; if(keyCount >= 49) break;
+                    keyCount++;
+                    if(keyCount >= 49) break;
                 }
                 if(keyCount >= 49) break;
             }
@@ -318,20 +282,26 @@
 
         function attachPianoEvents() {
             document.querySelectorAll('.key').forEach(k => {
-                const startTrigger = (e) => { e.preventDefault(); isPianoActive = true; play(k.dataset.note); k.classList.add('active-key'); };
-                const moveTrigger = () => { if (isMouseDown) { play(k.dataset.note); k.classList.add('active-key'); } };
-                const endTrigger = () => { k.classList.remove('active-key'); };
-                k.onmousedown = startTrigger; k.onmouseenter = moveTrigger; k.onmouseup = endTrigger; k.onmouseleave = endTrigger;
-                k.addEventListener('touchstart', startTrigger, {passive: false});
-                k.addEventListener('touchend', endTrigger);
+                k.onmousedown = (e) => { e.preventDefault(); isPianoActive = true; play(k.dataset.note); k.classList.add('active-key'); };
+                k.onmouseenter = () => { if (isMouseDown) { play(k.dataset.note); k.classList.add('active-key'); } };
+                k.onmouseup = () => { k.classList.remove('active-key'); };
+                k.onmouseleave = () => { k.classList.remove('active-key'); };
             });
         }
 
-        window.onmousedown = () => isMouseDown = true; window.onmouseup = () => isMouseDown = false;
+        window.onmousedown = () => isMouseDown = true;
+        window.onmouseup = () => isMouseDown = false;
+
         document.getElementById('piano-focus-zone').onclick = (e) => { isPianoActive = true; e.stopPropagation(); document.getElementById('piano-focus-zone').classList.add('focused'); };
         document.onclick = () => { isPianoActive = false; document.getElementById('piano-focus-zone').classList.remove('focused'); };
 
-        function initAudio() { if (!window.audioCtx) { window.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); window.analyser = window.audioCtx.createAnalyser(); window.analyser.fftSize = 1024; } }
+        function initAudio() { 
+            if (!window.audioCtx) { 
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+                window.analyser = window.audioCtx.createAnalyser(); 
+                window.analyser.fftSize = 1024; 
+            } 
+        }
 
         function animateWave() {
             if (!recording) return; requestAnimationFrame(animateWave);
@@ -342,61 +312,9 @@
             scan += canvas.width / 100;
         }
 
-        async function play(note) { initAudio(); await Tone.start(); if (sampler?.loaded) { sampler.triggerAttackRelease(note, "0.5"); } }
-
-        function showTrimSliders() {
-            const startSlider = document.getElementById('trim-start'); const endSlider = document.getElementById('trim-end');
-            startSlider.style.display = 'block'; endSlider.style.display = 'block';
-            startSlider.style.left = '0px'; endSlider.style.left = (canvas.clientWidth - 24) + 'px';
-            trimStartPercent = 0; trimEndPercent = 100;
-        }
-
-        function hideTrimSliders() { document.getElementById('trim-start').style.display = 'none'; document.getElementById('trim-end').style.display = 'none'; }
-
-        function setupTrimmer() {
-            const container = document.getElementById('lcd-container');
-            const startSlider = document.getElementById('trim-start'); const endSlider = document.getElementById('trim-end');
-            let activeSlider = null;
-
-            const onStart = (e) => { e.preventDefault(); activeSlider = e.target; };
-            const onMove = (e) => {
-                if (!activeSlider) return;
-                const rect = container.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                let x = clientX - rect.left;
-                if (x < 0) x = 0; if (x > rect.width - 24) x = rect.width - 24;
-
-                if (activeSlider.id === 'trim-start') {
-                    const endX = parseFloat(endSlider.style.left) || (rect.width - 24);
-                    if (x >= endX - 15) x = endX - 15; 
-                    startSlider.style.left = x + 'px'; trimStartPercent = (x / rect.width) * 100;
-                } else {
-                    const startX = parseFloat(startSlider.style.left) || 0;
-                    if (x <= startX + 15) x = startX + 15; 
-                    endSlider.style.left = x + 'px'; trimEndPercent = ((x + 24) / rect.width) * 100;
-                }
-            };
-            window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', () => activeSlider = null);
-            startSlider.addEventListener('touchstart', onStart); endSlider.addEventListener('touchstart', onStart);
-            window.addEventListener('touchmove', onMove, {passive: false}); window.addEventListener('touchend', () => activeSlider = null);
-        }
-
-        async function processAudioData(url) {
-            initAudio(); const response = await fetch(url); const arrayBuffer = await response.arrayBuffer();
-            const cleanCtx = new (window.AudioContext || window.webkitAudioContext)();
-            cleanCtx.decodeAudioData(arrayBuffer, (buffer) => { rawAudioBuffer = buffer; showTrimSliders(); cleanCtx.close(); });
-        }
-
-        function getTrimmedAudioBlob() {
-            if (!rawAudioBuffer) return null; const totalFrames = rawAudioBuffer.length;
-            const startFrame = Math.floor((trimStartPercent / 100) * totalFrames); const endFrame = Math.floor((trimEndPercent / 100) * totalFrames);
-            let frameCount = endFrame - startFrame; if (frameCount <= 4410) frameCount = Math.min(4410, totalFrames - startFrame); 
-            const trimmedBuffer = window.audioCtx.createBuffer(rawAudioBuffer.numberOfChannels, frameCount, rawAudioBuffer.sampleRate);
-            for (let i = 0; i < rawAudioBuffer.numberOfChannels; i++) {
-                const channelData = rawAudioBuffer.getChannelData(i); const trimmedData = trimmedBuffer.getChannelData(i);
-                for (let j = 0; j < frameCount; j++) { trimmedData[j] = channelData[startFrame + j] || 0; }
-            }
-            return trimmedBuffer;
+        async function play(note) {
+            initAudio(); await Tone.start();
+            if (sampler?.loaded) { sampler.triggerAttackRelease(note, "0.5"); }
         }
 
         function buildUI() {
@@ -410,21 +328,36 @@
             }
         }
 
-        window.onkeydown = e => { if (!isPianoActive) return; const n = numMap[e.key]; if (n && !e.repeat) { play(n); const el = document.querySelector(`[data-note="${n}"]`); if (el) el.classList.add('active-key'); } };
-        window.onkeyup = e => { if (!isPianoActive) return; const n = numMap[e.key]; if (n) { const el = document.querySelector(`[data-note="${n}"]`); if (el) el.classList.remove('active-key'); } };
+        window.onkeydown = e => { 
+            if (!isPianoActive) return; 
+            const note = dualKeyboardMap[e.code]; 
+            if (note && !e.repeat) { 
+                play(note); 
+                const el = document.querySelector(`[data-note="${note}"]`); 
+                if (el) el.classList.add('active-key'); 
+            } 
+        };
+        window.onkeyup = e => { 
+            if (!isPianoActive) return; 
+            const note = dualKeyboardMap[e.code]; 
+            if (note) { 
+                const el = document.querySelector(`[data-note="${note}"]`); 
+                if (el) el.classList.remove('active-key'); 
+            } 
+        };
 
         document.getElementById('rec-btn').onclick = async () => {
             initAudio(); if (window.audioCtx.state === 'suspended') await window.audioCtx.resume();
             try {
-                if(currentPlayingSource) { try { currentPlayingSource.stop(); }catch(e){} }
-                hideTrimSliders(); const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 const src = window.audioCtx.createMediaStreamSource(stream); src.connect(window.analyser);
                 recording = true; scan = 0; currentWave = [];
                 canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-                ctx.fillStyle = "#050505"; ctx.fillRect(0,0,canvas.width,canvas.height); animateWave();
+                ctx.fillStyle = "#050505"; ctx.fillRect(0,0,canvas.width,canvas.height);
+                animateWave();
                 const mr = new MediaRecorder(stream); let chunks = [];
                 mr.ondataavailable = e => chunks.push(e.data);
-                mr.onstop = () => { recording = false; tempUrl = URL.createObjectURL(new Blob(chunks, {type:'audio/mp3'})); stream.getTracks().forEach(t=>t.stop()); processAudioData(tempUrl); };
+                mr.onstop = () => { recording = false; tempUrl = URL.createObjectURL(new Blob(chunks, {type:'audio/mp3'})); stream.getTracks().forEach(t=>t.stop()); };
                 mr.start(); document.getElementById('rec-btn').classList.add('rec-active');
                 setTimeout(() => { mr.stop(); document.getElementById('rec-btn').classList.remove('rec-active'); }, 2000);
             } catch(e) { alert("Mic Error"); }
@@ -432,57 +365,28 @@
 
         document.getElementById('audio-up').onchange = function(e) {
             const f = e.target.files[0];
-            if (f) { 
-                if(currentPlayingSource) { try { currentPlayingSource.stop(); }catch(e){} }
-                hideTrimSliders(); tempUrl = URL.createObjectURL(f); currentWave = Array.from({length:40}, () => Math.random()*20); document.getElementById('name-tag').value = f.name.toUpperCase().substring(0, 10);
-                canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-                ctx.fillStyle = "#050505"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.strokeStyle = "#00d2ff"; ctx.lineWidth = 2; ctx.beginPath();
-                currentWave.forEach((v, idx) => { let posX = (canvas.width / 40) * idx; ctx.moveTo(posX, (canvas.height/2)-v); ctx.lineTo(posX, (canvas.height/2)+v); });
-                ctx.stroke(); processAudioData(tempUrl);
-            }
+            if (f) { tempUrl = URL.createObjectURL(f); currentWave = Array.from({length:40}, () => Math.random()*20); document.getElementById('name-tag').value = f.name.toUpperCase().substring(0, 10); }
             this.value = '';
         };
 
-        document.getElementById('save-btn').onclick = async () => {
+        document.getElementById('save-btn').onclick = () => {
             if (!tempUrl || tracks.length >= 6) return;
-            const processedBuffer = getTrimmedAudioBlob();
-            let finalUrl = tempUrl; let finalWave = [...currentWave];
-            if (processedBuffer) {
-                const startIdx = Math.floor((trimStartPercent / 100) * currentWave.length); const endIdx = Math.floor((trimEndPercent / 100) * currentWave.length);
-                finalWave = currentWave.slice(startIdx, endIdx); if (finalWave.length === 0) finalWave = [...currentWave];
-                const offlineCtx = new OfflineAudioContext(processedBuffer.numberOfChannels, processedBuffer.length, processedBuffer.sampleRate);
-                const offlineSource = offlineCtx.createBufferSource(); offlineSource.buffer = processedBuffer; offlineSource.connect(offlineCtx.destination); offlineSource.start();
-                const renderedBuffer = await offlineCtx.startRendering(); const wavBytes = bufferToWav(renderedBuffer); finalUrl = URL.createObjectURL(new Blob([wavBytes], { type: 'audio/wav' }));
-            }
-            const trk = { id: Date.now(), name: document.getElementById('name-tag').value.toUpperCase(), url: finalUrl, wave: finalWave };
-            tracks.push(trk); tempUrl = null; rawAudioBuffer = null; document.getElementById('name-tag').value = DEFAULT_NAME; hideTrimSliders(); loadTrack(trk.id);
+            const trk = { id: Date.now(), name: document.getElementById('name-tag').value.toUpperCase(), url: tempUrl, wave: [...currentWave] };
+            tracks.push(trk); tempUrl = null; document.getElementById('name-tag').value = DEFAULT_NAME; loadTrack(trk.id);
         };
 
-        document.getElementById('preview-btn').onclick = () => { 
-            if (!tempUrl) return; if (currentPlayingSource) { try { currentPlayingSource.stop(); } catch(e){} }
-            if (rawAudioBuffer) {
-                initAudio(); const playSource = window.audioCtx.createBufferSource(); playSource.buffer = rawAudioBuffer; playSource.connect(window.audioCtx.destination);
-                const duration = rawAudioBuffer.duration; const startTime = (trimStartPercent / 100) * duration; const endTime = (trimEndPercent / 100) * duration;
-                let sliceDuration = endTime - startTime; if(sliceDuration <= 0.05) sliceDuration = Math.min(0.1, duration - startTime);
-                playSource.start(0, startTime, sliceDuration); currentPlayingSource = playSource;
-            } else { document.getElementById('preview-audio').src = tempUrl; document.getElementById('preview-audio').play(); }
-        };
+        document.getElementById('preview-btn').onclick = () => { if (tempUrl) { const a = document.getElementById('preview-audio'); a.src = tempUrl; a.play(); } };
 
-        function loadTrack(id) { const trk = tracks.find(t => t.id === id); if (!trk) return; activeId = id; if (sampler) sampler.dispose(); sampler = new Tone.Sampler({ urls: { G4: trk.url } }).toDestination(); buildUI(); }
-        function deleteTrack(id) { if(id === -1) return; tracks = tracks.filter(t => t.id !== id); if(activeId === id) activeId = null; buildUI(); }
-
-        function bufferToWav(buffer) {
-            let numOfChan = buffer.numberOfChannels, length = buffer.length * numOfChan * 2 + 44, bufferArr = new ArrayBuffer(length), view = new DataView(bufferArr), channels = [], i, sample, offset = 0, pos = 0;
-            function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-            function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
-            setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157); setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan); setUint32(buffer.sampleRate); setUint32(buffer.sampleRate * 2 * numOfChan); setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
-            for (i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
-            while (pos < length) { for (i = 0; i < numOfChan; i++) { sample = Math.max(-1, Math.min(1, channels[i][offset])); sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF; view.setInt16(pos, sample, true); pos += 2; } offset++; }
-            return bufferArr;
+        function loadTrack(id) {
+            const trk = tracks.find(t => t.id === id); if (!trk) return;
+            activeId = id; if (sampler) sampler.dispose();
+            sampler = new Tone.Sampler({ urls: { G4: trk.url } }).toDestination();
+            buildUI();
         }
 
+        function deleteTrack(id) { if(id === -1) return; tracks = tracks.filter(t => t.id !== id); if(activeId === id) activeId = null; buildUI(); }
+
         createPiano();
-        setupTrimmer();
         buildUI();
     </script>
 </body>
