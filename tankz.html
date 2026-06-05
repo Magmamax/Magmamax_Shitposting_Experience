@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Tank Wars - Ajustes Tácticos</title>
+    <style>
+        body {
+            background-color: #fff;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: monospace;
+            /* Evita la selección de texto accidental al jugar */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+        #arena {
+            width: 800px;
+            height: 600px;
+            background-color: #fff;
+            border: 2px solid #000;
+            position: relative;
+            overflow: hidden;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            text-align: center;
+        }
+        .screen h1 { font-size: 48px; margin: 0 0 20px 0; }
+        .screen p { font-size: 24px; margin: 5px 0; }
+        
+        #game-over { display: none; }
+        
+        .tank {
+            position: absolute;
+            white-space: pre;
+            line-height: 1;
+            text-align: center;
+            transform-origin: center center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+        }
+        .bullet {
+            position: absolute;
+            color: #000;
+            font-size: 20px;
+            transform-origin: center center;
+        }
+        .powerup {
+            position: absolute;
+            font-weight: bold;
+            font-size: 18px;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="arena">
+        <div id="ui">Jugador 1: 10 HP  |  CPU: 10 HP</div>
+        <div id="player1" class="tank">  |  <br>[███]<br>[███]</div>
+        <div id="player2" class="tank">  |  <br>[███]<br>[███]</div>
+        
+        <div id="start-screen" class="screen">
+            <h1>ASCII TANK WARS</h1>
+            <p>Flechas para moverte | ESPACIO para disparar</p>
+            <p style="font-size: 16px; margin-top: 20px;">(Q): Cuadruple Daño | (S): Doble Velocidad | (H): Doble Ataque</p>
+            <p style="margin-top: 40px; font-weight: bold;">[ PRESIONA ESPACIO PARA INICIAR ]</p>
+        </div>
+
+        <div id="game-over" class="screen">
+            <h1>GAME OVER</h1>
+            <p id="winner-text"></p>
+            <p style="font-size: 16px; font-weight: bold; margin-top: 30px;">[ PRESIONA ENTER PARA VOLVER A JUGAR ]</p>
+        </div>
+    </div>
+
+<script>
+    const arena = document.getElementById('arena');
+    const ui = document.getElementById('ui');
+    const startScreen = document.getElementById('start-screen');
+    const gameOverScreen = document.getElementById('game-over');
+    const winnerText = document.getElementById('winner-text');
+    
+    const keys = {};
+    let gameState = 'START'; 
+    
+    let powerups = [];
+    let lastPowerUpSpawn = 0;
+
+    window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        
+        // Iniciar el juego con Espacio
+        if (gameState === 'START' && e.code === 'Space') {
+            gameState = 'PLAYING';
+            startScreen.style.display = 'none';
+            lastPowerUpSpawn = Date.now();
+        }
+        
+        // Reiniciar el juego con Enter
+        if (gameState === 'GAMEOVER' && e.code === 'Enter') {
+            location.reload(); // Recarga la página para reiniciar todo el estado
+        }
+    });
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    class Bullet {
+        constructor(x, y, angle, damage) {
+            this.x = x;
+            this.y = y;
+            this.angle = angle;
+            this.speed = 2.8; // Proyectiles 50% más lentos (antes 5.6)
+            this.damage = damage; 
+            this.element = document.createElement('div');
+            this.element.className = 'bullet';
+            this.element.innerText = '*';
+            arena.appendChild(this.element);
+            this.active = true;
+        }
+
+        update() {
+            const rad = (this.angle - 90) * (Math.PI / 180);
+            this.x += Math.cos(rad) * this.speed;
+            this.y += Math.sin(rad) * this.speed;
+
+            this.element.style.left = `${this.x}px`;
+            this.element.style.top = `${this.y}px`;
+
+            if (this.x < 0 || this.x > 800 || this.y < 0 || this.y > 600) {
+                this.destroy();
+            }
+        }
+
+        destroy() {
+            if (this.active) {
+                this.active = false;
+                this.element.remove();
+            }
+        }
+    }
+
+    class Tank {
+        constructor(elementId, x, y, isCPU) {
+            this.element = document.getElementById(elementId);
+            this.x = x;
+            this.y = y;
+            this.angle = isCPU ? 90 : -90;
+            this.isCPU = isCPU;
+            this.bullets = [];
+            this.lastShot = 0;
+            this.hp = 10;
+            this.radius = 20;
+            
+            this.baseSpeed = isCPU ? 1.6 : 2.4; 
+            this.rotSpeed = 3;
+            this.baseCooldown = 1000; 
+            
+            this.speedMult = 1;
+            this.cooldownMult = 1;
+            this.damage = 1;
+            this.activeBuffs = {};
+        }
+
+        get currentSpeed() { return this.baseSpeed * this.speedMult; }
+        get currentCooldown() { return this.baseCooldown * this.cooldownMult; }
+
+        applyBuff(type, now) {
+            const duration = 5000; // El poder dura 5 segundos en el tanque
+            this.activeBuffs[type] = now + duration;
+            
+            if (type === 'Q') this.damage = 4;
+            if (type === 'S') this.speedMult = 2;
+            if (type === 'H') this.cooldownMult = 0.5; 
+        }
+
+        manageBuffs(now) {
+            if (this.activeBuffs['Q'] && now > this.activeBuffs['Q']) { this.damage = 1; delete this.activeBuffs['Q']; }
+            if (this.activeBuffs['S'] && now > this.activeBuffs['S']) { this.speedMult = 1; delete this.activeBuffs['S']; }
+            if (this.activeBuffs['H'] && now > this.activeBuffs['H']) { this.cooldownMult = 1; delete this.activeBuffs['H']; }
+        }
+
+        update(target, now) {
+            this.manageBuffs(now);
+
+            if (this.isCPU) {
+                this.aiBehavior(target, now);
+            } else {
+                this.playerBehavior(now);
+            }
+
+            this.element.style.transform = `translate(calc(${this.x}px - 50%), calc(${this.y}px - 50%)) rotate(${this.angle}deg)`;
+
+            this.bullets.forEach(b => b.update());
+            this.bullets = this.bullets.filter(b => b.active);
+        }
+
+        playerBehavior(now) {
+            if (keys['ArrowLeft']) this.angle -= this.rotSpeed;
+            if (keys['ArrowRight']) this.angle += this.rotSpeed;
+
+            if (keys['ArrowUp'] || keys['ArrowDown']) {
+                const dir = keys['ArrowUp'] ? 1 : -1;
+                const rad = (this.angle - 90) * (Math.PI / 180);
+                let nextX = this.x + Math.cos(rad) * this.currentSpeed * dir;
+                let nextY = this.y + Math.sin(rad) * this.currentSpeed * dir;
+
+                if (nextX > 20 && nextX < 780) this.x = nextX;
+                if (nextY > 20 && nextY < 580) this.y = nextY;
+            }
+
+            if (keys['Space'] && now - this.lastShot > this.currentCooldown) {
+                this.shoot(now);
+            }
+        }
+
+        aiBehavior(target, now) {
+            let dx = target.x - this.x;
+            let dy = target.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            
+            let targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+
+            let diff = (targetAngle - this.angle) % 360;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+
+            if (diff > 3) this.angle += this.rotSpeed;
+            else if (diff < -3) this.angle -= this.rotSpeed;
+
+            if (dist > 200) {
+                const rad = (this.angle - 90) * (Math.PI / 180);
+                this.x += Math.cos(rad) * this.currentSpeed;
+                this.y += Math.sin(rad) * this.currentSpeed;
+            }
+
+            if (Math.abs(diff) < 15 && now - this.lastShot > this.currentCooldown) {
+                this.shoot(now);
+            }
+        }
+
+        shoot(now) {
+            const rad = (this.angle - 90) * (Math.PI / 180);
+            const cannonLength = 20; 
+            const startX = this.x + Math.cos(rad) * cannonLength;
+            const startY = this.y + Math.sin(rad) * cannonLength;
+
+            this.bullets.push(new Bullet(startX, startY, this.angle, this.damage));
+            this.lastShot = now;
+        }
+    }
+
+    const player1 = new Tank('player1', 600, 300, false);
+    const cpu = new Tank('player2', 200, 300, true);
+
+    function updateUI() {
+        ui.innerText = `Jugador 1: ${Math.max(0, player1.hp)} HP  |  CPU: ${Math.max(0, cpu.hp)} HP`;
+    }
+
+    function spawnPowerUp(now) {
+        const types = ['Q', 'S', 'H'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        const x = Math.random() * 700 + 50; 
+        const y = Math.random() * 500 + 50;
+        
+        const p = {
+            x: x, 
+            y: y, 
+            type: type, 
+            active: true, 
+            expiration: now + 3000, // Duran 3 segundos en pantalla
+            element: document.createElement('div')
+        };
+        
+        p.element.className = 'powerup';
+        p.element.innerText = `(${type})`;
+        p.element.style.left = `${x}px`;
+        p.element.style.top = `${y}px`;
+        arena.appendChild(p.element);
+        powerups.push(p);
+    }
+
+    function handlePowerUps(now) {
+        // Generar un power up cada 15 segundos
+        if (now - lastPowerUpSpawn > 15000) {
+            spawnPowerUp(now);
+            lastPowerUpSpawn = now;
+        }
+
+        powerups.forEach(p => {
+            if (!p.active) return;
+            
+            if (now > p.expiration) {
+                p.active = false;
+                p.element.remove();
+                return;
+            }
+
+            let dx1 = p.x - player1.x;
+            let dy1 = p.y - player1.y;
+            if (Math.sqrt(dx1 * dx1 + dy1 * dy1) < player1.radius + 15) {
+                player1.applyBuff(p.type, now);
+                p.active = false;
+                p.element.remove();
+                return;
+            }
+
+            let dx2 = p.x - cpu.x;
+            let dy2 = p.y - cpu.y;
+            if (Math.sqrt(dx2 * dx2 + dy2 * dy2) < cpu.radius + 15) {
+                cpu.applyBuff(p.type, now);
+                p.active = false;
+                p.element.remove();
+            }
+        });
+
+        powerups = powerups.filter(p => p.active);
+    }
+
+    function checkCollisions() {
+        player1.bullets.forEach(b => {
+            if (!b.active) return;
+            let dx = b.x - cpu.x;
+            let dy = b.y - cpu.y;
+            if (Math.sqrt(dx * dx + dy * dy) < cpu.radius) {
+                b.destroy();
+                cpu.hp -= b.damage; 
+                updateUI();
+                if (cpu.hp <= 0) endGame("¡Ganaste! Destruiste a la CPU.");
+            }
+        });
+
+        cpu.bullets.forEach(b => {
+            if (!b.active) return;
+            let dx = b.x - player1.x;
+            let dy = b.y - player1.y;
+            if (Math.sqrt(dx * dx + dy * dy) < player1.radius) {
+                b.destroy();
+                player1.hp -= b.damage;
+                updateUI();
+                if (player1.hp <= 0) endGame("La CPU te ha derrotado.");
+            }
+        });
+    }
+
+    function endGame(message) {
+        gameState = 'GAMEOVER';
+        winnerText.innerText = message;
+        gameOverScreen.style.display = "flex";
+    }
+
+    function gameLoop() {
+        if (gameState === 'PLAYING') {
+            const now = Date.now();
+            player1.update(null, now);
+            cpu.update(player1, now);
+            handlePowerUps(now);
+            checkCollisions();
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
